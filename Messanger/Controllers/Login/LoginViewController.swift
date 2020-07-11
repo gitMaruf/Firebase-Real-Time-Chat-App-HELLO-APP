@@ -10,10 +10,13 @@ import UIKit
 
 class LoginViewController: UIViewController {
 
-    
+//    private let contentViewSize = CGSize(width: self.view.frame.width, height: self.view.frame.height + 400)
     private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.clipsToBounds = true
+        let scrollView = UIScrollView(frame: .zero)
+//        scrollView.contentSize = contentViewSize
+        scrollView.clipsToBounds = false
+//        scrollView.bounces = true
+        scrollView.backgroundColor = .purple
         return scrollView
     }()
     private let imageView: UIImageView = {
@@ -64,8 +67,9 @@ class LoginViewController: UIViewController {
         title = "Log In"
         navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Register", style: .plain, target: self, action: #selector(didTabRegister))
         view.backgroundColor = .yellow
+        
         view.addSubview(scrollView)
-        scrollView.backgroundColor = .purple
+        scrollView.frame = view.bounds ;
         setupLoginConstraint()
     }
     @objc func didTabRegister(){
@@ -90,7 +94,7 @@ class LoginViewController: UIViewController {
 
 //    }
     fileprivate func setupLoginConstraint(){
-        scrollView.frame = view.bounds
+         //view.bounds
 //        imageView.translatesAutoresizingMaskIntoConstraints = false
 //        emailFeild.translatesAutoresizingMaskIntoConstraints = false
 //        passwordFeild.translatesAutoresizingMaskIntoConstraints = false
@@ -101,11 +105,13 @@ class LoginViewController: UIViewController {
         formStackView.spacing = 15
         formStackView.axis = .vertical
         formStackView.backgroundColor = .cyan
+       
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        formStackView.translatesAutoresizingMaskIntoConstraints = false
         
         scrollView.addSubview(imageView)
         scrollView.addSubview(formStackView)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        formStackView.translatesAutoresizingMaskIntoConstraints = false
+        
 
         NSLayoutConstraint.activate([
         imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
@@ -119,4 +125,9 @@ class LoginViewController: UIViewController {
         formStackView.heightAnchor.constraint(equalToConstant: 150)
         ])
     }
+    
+   
+ 
+
+    
 }
