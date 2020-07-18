@@ -7,6 +7,26 @@
 //
 
 import UIKit
+import FirebaseAuth
+
+extension UIButton {
+
+    override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        isHighlighted = true
+        super.touchesBegan(touches, with: event)
+    }
+
+    override open func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        isHighlighted = false
+        super.touchesEnded(touches, with: event)
+    }
+
+    override open func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        isHighlighted = false
+        super.touchesCancelled(touches, with: event)
+    }
+
+}
 
 class LoginViewController: UIViewController {
 
@@ -33,7 +53,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
    }()
    lazy var imageView: UIImageView = {
        let imageView = UIImageView()
-       imageView.image = UIImage(named: "logo")
+    imageView.image = UIImage(named: "logo")
        imageView.frame.size.height = 100
        imageView.contentMode = .scaleAspectFit
        return imageView
@@ -68,7 +88,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
        return feild
    }()
    lazy var loginButton: UIButton = {
-       let loginBtn = UIButton()
+    let loginBtn = UIButton(type: .system)
        loginBtn.setTitle("Login", for: .normal)
        loginBtn.backgroundColor = .red
        loginBtn.setTitleColor(.white, for: .normal)
@@ -137,7 +157,17 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
                 return
             }
             //MARK: Firebase Login
+        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
+            guard let strongSelf = self else { return }
+            guard let result = authResult, error == nil else {
+                return
+            }
+            let user = result.user
+            print("Login Successful \(user)")
+            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+        }
             print("Login Button Tapped")
+        
         }
         func alertUserLoginError(){
             let alert = UIAlertController(title: "Opps", message: "Please enter Log in information correctly", preferredStyle: .alert)

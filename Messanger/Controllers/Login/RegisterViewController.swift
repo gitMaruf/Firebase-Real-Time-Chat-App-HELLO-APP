@@ -8,6 +8,8 @@
 
 import UIKit
 import Foundation
+import FirebaseAuth
+
 
 class RegisterViewController: UIViewController {
     
@@ -35,13 +37,14 @@ class RegisterViewController: UIViewController {
     }()
     lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(named: "monto") //(systemName: "person")
+        imageView.image = UIImage(systemName: "person.crop.circle") //(systemName: "person")
         imageView.contentMode = .scaleAspectFit
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 60
-        imageView.layer.borderWidth = 2
+//        imageView.layer.borderWidth = 2
         imageView.clipsToBounds = true
-        imageView.layer.borderColor = UIColor.lightGray.cgColor
+        //imageView.layer.borderColor = UIColor.lightGray.cgColor
+        imageView.tintColor = .white
         return imageView
     }()
     lazy var firstNameFeild: UITextField = {
@@ -164,7 +167,7 @@ class RegisterViewController: UIViewController {
         
     }
 
-    
+   
 @objc private func registerButtonTapped(){
     firstNameFeild.resignFirstResponder(); lastNameFeild.resignFirstResponder(); emailFeild.resignFirstResponder(); passwordFeild.resignFirstResponder()
     guard let firstName = firstNameFeild.text, let lastName = lastNameFeild.text, let email = emailFeild.text, let password = passwordFeild.text, !firstName.isEmpty, !lastName.isEmpty, !email.isEmpty, !password.isEmpty, password.count >= 6 else {
@@ -172,10 +175,34 @@ class RegisterViewController: UIViewController {
             return
         }
         //MARK: Firebase Register
+    
+    DatabaseManger.shared.userExist(with: email) { [weak self] exists in
+        guard let strongSelf = self else { return }
+
+        guard !exists else{
+            strongSelf.alertUserRegisterError(message: "Email is already exist.")
+            return
+        }
+        
+        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+            guard let _ = authResult, error == nil else {
+                    print("Error Occur : ", error as Any)
+                    return
+                }
+        //        let user = result.user
+        //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                // MARK: - Inser user into Database
+                DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, password: password))
+        //        print("Create User \(user)")
+            }
+        
+    }
+    
+    
         print("Register Button Tapped")
     }
-    func alertUserRegisterError(){
-        let alert = UIAlertController(title: "Opps", message: "Please enter your information correctly", preferredStyle: .alert)
+    func alertUserRegisterError(message: String = "Please enter your information correctly"){
+        let alert = UIAlertController(title: "Opps", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction.init(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
