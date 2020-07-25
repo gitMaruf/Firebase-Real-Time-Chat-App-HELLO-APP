@@ -7,31 +7,52 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class ProfileViewController: UIViewController {
 
-   lazy var imageView: UIImageView = {
-       let imageView = UIImageView()
-       imageView.image = UIImage(named: "logo")
-       imageView.frame.size.height = 100
-       imageView.contentMode = .scaleAspectFit
-       return imageView
-   }()
-    override func viewDidLoad()
-    {
+    @IBOutlet var tableView: UITableView!
+    let data = ["Sign Out"]
+    
+    override func viewDidLoad() {
         super.viewDidLoad()
-        view.addSubview(imageView)
-        imageView.frame = CGRect(x: view.center.x-100, y: view.center.y, width: 200, height: 100)
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
-        imageView.isUserInteractionEnabled = true
-        imageView.addGestureRecognizer(tapGestureRecognizer)
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.delegate = self
+        tableView.dataSource = self
+        
     }
 
-    @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
-    {
-        let tappedImage = tapGestureRecognizer.view as! UIImageView
-        print(tappedImage.frame.size.width)
-        // Your action
-    }
+}
 
+extension ProfileViewController: UITableViewDelegate, UITableViewDataSource{
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        data.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        cell.textLabel?.text = data[indexPath.row]
+        cell.textLabel?.textAlignment = .center
+        cell.textLabel?.textColor = .red
+        return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let alert = UIAlertController(title: "", message: "", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Sign Out",style: .destructive, handler: { [weak self] _ in
+            guard let strongSelf = self else {return}
+            do{
+                try FirebaseAuth.Auth.auth().signOut()
+                let vc = LoginViewController()
+                let nvc = UINavigationController(rootViewController: vc)
+                nvc.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                strongSelf.present(nvc, animated: true, completion: nil)
+            }
+            catch{
+                print("Failed to logout")
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert,animated: true)
+    }
 }

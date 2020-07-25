@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseAuth
+import FBSDKLoginKit
 
 extension UIButton {
 
@@ -97,11 +98,22 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
        loginBtn.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
        return loginBtn
    }()
-   
+    let fbLoginButton: FBLoginButton = {
+        let button = FBLoginButton()
+        button.permissions = ["public_profile", "email"]
+        return button
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Facebook Login Button
+//        let fbLoginButton = FBLoginButton()
+//        fbLoginButton.center = view.center
+//        view.addSubview(fbLoginButton)
+        
         emailFeild.delegate = self
         passwordFeild.delegate = self
+        fbLoginButton.delegate = self
         title = "Log In"
         navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Register", style: .plain, target: self, action: #selector(didTapRegister))
         view.backgroundColor = .yellow
@@ -109,6 +121,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         scrollView.addSubview(containerView)
         setupLoginConstraint()
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
+        
     }
     
     @objc private func didTapRegister(){
@@ -122,12 +135,13 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
     }
     fileprivate func setupLoginConstraint(){
                  
-                let formStackView: UIStackView = UIStackView(arrangedSubviews: [emailFeild, passwordFeild, loginButton])
-                formStackView.distribution = .fillEqually
-                formStackView.spacing = 15
-                formStackView.axis = .vertical
-                formStackView.backgroundColor = .cyan
-               
+        fbLoginButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        let formStackView: UIStackView = UIStackView(arrangedSubviews: [emailFeild, passwordFeild, loginButton, fbLoginButton])
+        formStackView.distribution = .fillEqually
+        formStackView.spacing = 15
+        formStackView.axis = .vertical
+        formStackView.backgroundColor = .cyan
+                
                 containerView.addSubview(imageView)
                 containerView.addSubview(formStackView)
                 imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -143,7 +157,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
                 formStackView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 60),
                 formStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 30),
                 formStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -30),
-                formStackView.heightAnchor.constraint(equalToConstant: 150)
+                formStackView.heightAnchor.constraint(equalToConstant: 200)
                 ])
             }
         
@@ -189,3 +203,73 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         }
     }
 
+extension LoginViewController: LoginButtonDelegate{
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
+        // No operation
+    }
+    
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
+        guard let token = result?.token?.tokenString else {
+            print("User failed to log in with facebook")
+            return
+        }
+        let facebookRequest = FBSDKLoginKit.GraphRequest(graphPath: "me", parameters: ["fields": "id, first_name, last_name, email"],tokenString: token, version: nil, httpMethod: .get)
+        facebookRequest.start(completionHandler: { _, result, error in
+            guard let result = result as? [String: Any], error == nil else{
+                print("Failed to make facebook graphrequest -\(String(describing: error))")
+                return
+            }
+            print("Graph Result: \(result)")
+            guard let firstName = result["first_name"] as? String,
+                let lastName = result["last_name"] as? String,
+            let email = result["email"] as? String else {
+                return
+            }
+            // If not exist insert into database and authentication
+            DatabaseManger.shared.userExist(with: "email") { exists in
+                if !exists{
+                    DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                }
+            }
+            
+            let credential = FacebookAuthProvider.credential(withAccessToken: token)
+            FirebaseAuth.Auth.auth().signIn(with: credential, completion: { [weak self] authResult, error in
+                guard let strongSelf = self else{
+                    return
+                }
+                guard result != nil, error == nil else{
+                    if let error = error {
+                        print("Facebook credential log in failed, MFA may be needed -\(error)")
+                    }
+                    return
+                }
+                print("Facebook log in successfull!")
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            })
+            
+            
+        })
+        
+    }
+    
+//
+//    func returnUserData()
+//    {
+//        let graphRequest : FBSDKGraphRequest = FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, name, first_name, last_name, email, friends, birthday, cover, devices, picture.type(large)"])
+//
+//        graphRequest.startWithCompletionHandler({ (connection, result, error) -> Void in
+//        if ((error) != nil)
+//        {
+//              // Process error
+//              print("Error: \(error)")
+//        }
+//        else
+//        {
+//              print(result)
+//
+//        }
+//       })
+//    }
+
+    
+}

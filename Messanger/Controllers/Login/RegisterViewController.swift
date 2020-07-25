@@ -192,7 +192,7 @@ class RegisterViewController: UIViewController {
         //        let user = result.user
         //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
                 // MARK: - Inser user into Database
-                DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email, password: password))
+                DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
         //        print("Create User \(user)")
             }
         

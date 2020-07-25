@@ -40,14 +40,14 @@ extension DatabaseManger{
                 "firstname": user.firstName,
                 "lastname": user.lastName,
                 //"emailaddress": user.safeEmail,
-                "password": user.password
+                //"password": user.password
             ])
         }
         public struct ChatAppUser{
              let firstName: String
              let lastName: String
              let emailAddress: String
-             let password: String
+             //let password: String
     //        let profilePictureURL: String
            
             var  safeEmail: String {
