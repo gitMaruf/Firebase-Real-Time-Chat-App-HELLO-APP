@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import FBSDKLoginKit
+import GoogleSignIn
 
 extension UIButton {
 
@@ -34,7 +35,7 @@ class LoginViewController: UIViewController {
 lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.view.frame.height)
    lazy var scrollView: UIScrollView = {
        let scrollView = UIScrollView(frame: .zero)
-       scrollView.backgroundColor = .orange
+       //scrollView.backgroundColor = .orange
        scrollView.frame = self.view.bounds // device display size
        scrollView.contentSize = contentViewSize // total content size
        scrollView.autoresizingMask = .flexibleHeight
@@ -44,7 +45,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
    lazy var containerView: UIView = {
       let containerView = UIView()
        containerView.frame.size = contentViewSize
-       containerView.backgroundColor = .brown
+       //containerView.backgroundColor = .brown
        return containerView
    }()
    lazy var copyrightLable: UILabel = {
@@ -103,27 +104,45 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         button.permissions = ["public_profile", "email"]
         return button
     }()
-
+    let googleSignInButton: GIDSignInButton = {
+        let button = GIDSignInButton()
+        
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Facebook Login Button
 //        let fbLoginButton = FBLoginButton()
 //        fbLoginButton.center = view.center
 //        view.addSubview(fbLoginButton)
-        
+        GIDSignIn.sharedInstance()?.presentingViewController = self
+        NotificationCenter.default.addObserver(self, selector: #selector(didSignIn), name: NSNotification.Name("SuccessfulSignInNotification"), object: nil)
+
         emailFeild.delegate = self
         passwordFeild.delegate = self
         fbLoginButton.delegate = self
         title = "Log In"
         navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Register", style: .plain, target: self, action: #selector(didTapRegister))
-        view.backgroundColor = .yellow
+        view.backgroundColor = .white
         view.addSubview(scrollView)
         scrollView.addSubview(containerView)
         setupLoginConstraint()
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
     }
-    
+    @objc func didSignIn()  {
+
+        // Add your code here to push the new view controller
+      //navigationController?.pushViewController(ConversationsViewController(), animated: true)
+        //present(ConversationsViewController(), animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
+
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     @objc private func didTapRegister(){
         let vc = RegisterViewController() //ProfileViewController() 
         vc.title = "Create Account"
@@ -134,9 +153,9 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         navigationController?.pushViewController(vc, animated: true)
     }
     fileprivate func setupLoginConstraint(){
-                 
-        fbLoginButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
-        let formStackView: UIStackView = UIStackView(arrangedSubviews: [emailFeild, passwordFeild, loginButton, fbLoginButton])
+        //fbLoginButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        let formStackView: UIStackView = UIStackView(arrangedSubviews: [emailFeild, passwordFeild, loginButton, fbLoginButton, googleSignInButton])
+        
         formStackView.distribution = .fillEqually
         formStackView.spacing = 15
         formStackView.axis = .vertical
@@ -157,7 +176,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
                 formStackView.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 60),
                 formStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 30),
                 formStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -30),
-                formStackView.heightAnchor.constraint(equalToConstant: 200)
+                formStackView.heightAnchor.constraint(equalToConstant: CGFloat(formStackView.arrangedSubviews.count * 55))
                 ])
             }
         
@@ -237,7 +256,7 @@ extension LoginViewController: LoginButtonDelegate{
                 guard let strongSelf = self else{
                     return
                 }
-                guard result != nil, error == nil else{
+                guard error == nil else{
                     if let error = error {
                         print("Facebook credential log in failed, MFA may be needed -\(error)")
                     }
@@ -249,7 +268,6 @@ extension LoginViewController: LoginButtonDelegate{
             
             
         })
-        
     }
     
 //
