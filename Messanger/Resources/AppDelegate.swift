@@ -55,9 +55,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
         guard let email = user.profile.email, let firstName = user.profile.givenName, let lastName = user.profile.familyName else{
             return
         }
+        UserDefaults.standard.set(email, forKey: "email")
+
+        let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
         DatabaseManger.shared.userExist(with: email, completion: { exists in
             if !exists{
-                DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                DatabaseManger.shared.insertUser(with: chatAppUser, completion: { success in
+                    if success{
+                        if user.profile.hasImage{
+                            guard let url = user.profile.imageURL(withDimension: 200) else {return}
+                            URLSession.shared.dataTask(with: url, completionHandler:  { (data, _, error) in
+                                // Upload Image
+                                let fileName = chatAppUser.profilePictureURL
+                                guard let data = data, error == nil else{
+                                    print("URL Session data task Error: \(String(describing: error))")
+                                    return
+                                }
+                                StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: {result in
+                                    switch(result){
+                                    case .success(let downloadURL) :
+                                        print("Upload Successfull: \(downloadURL)")
+                                        UserDefaults.standard.set(downloadURL, forKey: "profilePictureURL")
+                                    case .failure(let error):
+                                        print("Storage Manager Error: \(error)")
+                                    }
+                                })
+                                
+                                }).resume() // URLSession dataTask begains from here
+                            
+                        }
+                       
+                        
+                        
+                    }
+                })
             }
         })
       guard let authentication = user.authentication else {

@@ -9,7 +9,8 @@
 import UIKit
 import Foundation
 import FirebaseAuth
-
+import JGProgressHUD
+import FirebaseStorage
 
 class RegisterViewController: UIViewController {
     
@@ -111,9 +112,12 @@ class RegisterViewController: UIViewController {
         RegisterBtn.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
         return RegisterBtn
     }()
-    
+    let hud = JGProgressHUD(style: .light)
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+
         emailFeild.delegate = self
         passwordFeild.delegate = self
         view.backgroundColor = .yellow
@@ -167,32 +171,61 @@ class RegisterViewController: UIViewController {
         
     }
 
-   
+    
+
 @objc private func registerButtonTapped(){
+    
+    //hud.dismiss(afterDelay: 3.0)
+    
     firstNameFeild.resignFirstResponder(); lastNameFeild.resignFirstResponder(); emailFeild.resignFirstResponder(); passwordFeild.resignFirstResponder()
     guard let firstName = firstNameFeild.text, let lastName = lastNameFeild.text, let email = emailFeild.text, let password = passwordFeild.text, !firstName.isEmpty, !lastName.isEmpty, !email.isEmpty, !password.isEmpty, password.count >= 6 else {
             alertUserRegisterError()
             return
         }
         //MARK: Firebase Register
-    
+   
+    self.hud.show(in: view)
+
     DatabaseManger.shared.userExist(with: email) { [weak self] exists in
         guard let strongSelf = self else { return }
+        DispatchQueue.main.async {
+            strongSelf.hud.dismiss()
+        }
 
         guard !exists else{
             strongSelf.alertUserRegisterError(message: "Email is already exist.")
             return
         }
-        
         FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
             guard let _ = authResult, error == nil else {
                     print("Error Occur : ", error as Any)
                     return
                 }
+            let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
         //        let user = result.user
         //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
-                // MARK: - Inser user into Database
-                DatabaseManger.shared.insertUser(with: DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+        // MARK: - Inser user into Database
+            DatabaseManger.shared.insertUser(with: chatAppUser, completion: {success in
+                if success{
+                    guard let data = strongSelf.imageView.image?.jpegData(compressionQuality: 0.75) else{ // pngData()
+                        return
+                    }
+                    let fileName = chatAppUser.profilePictureURL
+                    StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: {result in
+                        switch(result){
+                        case .success(let downloadURL) :
+                             print("downloadURL: \(downloadURL)")
+                             UserDefaults.standard.set(downloadURL, forKey: "profilePictureURL")
+                        case .failure(let error):
+                            print("Storage Manager Error: \(error)")
+                        }
+                       
+                         
+                    })
+                }
+            })
+            
+            self?.dismiss(animated: true, completion: nil)
         //        print("Create User \(user)")
             }
         
@@ -204,6 +237,7 @@ class RegisterViewController: UIViewController {
     func alertUserRegisterError(message: String = "Please enter your information correctly"){
         let alert = UIAlertController(title: "Opps", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction.init(title: "Dismiss", style: .cancel, handler: nil))
+        self.hud.dismiss()
         present(alert, animated: true, completion: nil)
     }
     
