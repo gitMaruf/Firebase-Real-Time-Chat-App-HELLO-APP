@@ -55,9 +55,24 @@ class ConversationsViewController: UIViewController {
     }
     @objc private func rightBarButtonTap(){
         let vc = NewConversationViewController()
+        vc.completion = { [weak self] result in
+            print("\(result)")
+            
+            self?.createNewConversation(result: result)
+        }
 //        navigationController?.pushViewController(vc, animated: true)
         let nvc = UINavigationController(rootViewController: vc)
         present(nvc, animated: true, completion: nil)
+    }
+    private func createNewConversation(result: [String: String]){
+        guard let name = result["name"], let email = result["email"] else{
+            return
+        }
+        let vc = ChatViewController(with: email)
+        vc.isNewConverstion = true
+        vc.title = name
+        vc.navigationItem.largeTitleDisplayMode = .never
+        navigationController?.pushViewController(vc, animated: true)
     }
     private func validateAuth(){
         if FirebaseAuth.Auth.auth().currentUser == nil {
@@ -86,7 +101,7 @@ extension ConversationsViewController: UITableViewDelegate, UITableViewDataSourc
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let vc = ChatViewController()
+        let vc = ChatViewController(with: "dumy@email.com")
         vc.title = "Joe Smith"
         vc.navigationItem.largeTitleDisplayMode = .never
         navigationController?.pushViewController(vc, animated: true)

@@ -12,7 +12,7 @@ import JGProgressHUD
 class NewConversationViewController: UIViewController {
     
     let hud = JGProgressHUD(style: .dark)
-    
+    public var completion: (([String: String]) -> (Void))?
     private var users = [[String: String]]()
     private var result = [[String: String]]()
     
@@ -74,6 +74,10 @@ extension NewConversationViewController: UITableViewDataSource, UITableViewDeleg
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         //start conversation
+        let targetData = result[indexPath.row]
+        dismiss(animated: true) {[weak self] in
+            self?.completion?(targetData)
+        }
     }
     
 }

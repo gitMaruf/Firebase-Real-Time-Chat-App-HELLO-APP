@@ -99,7 +99,9 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource{
             //Google Logout
             GIDSignIn.sharedInstance()?.signOut()
             do{
+                
                 try FirebaseAuth.Auth.auth().signOut()
+                UserDefaults.standard.removeObject(forKey: "email")
                 let vc = LoginViewController()
                 let nvc = UINavigationController(rootViewController: vc)
                 nvc.modalPresentationStyle = UIModalPresentationStyle.fullScreen
