@@ -21,7 +21,30 @@ struct Sender: SenderType {
     var displayName: String
     var senderPhoto: String
 }
-
+extension MessageKind{
+    var messageKindString: String{
+        switch self {
+        case .text(_):
+            return "text"
+        case .attributedText(_):
+            return "attributed Text"
+        case .photo(_):
+            return "photo"
+        case .video(_):
+            return " video"
+        case .location(_):
+            return "location"
+        case .emoji(_):
+            return " emoji"
+        case .audio(_):
+            return "audio"
+        case .contact(_):
+            return "contact"
+        case .custom(_):
+            return "custom"
+        }
+    }
+}
 
 class ChatViewController: MessagesViewController {
 
@@ -81,7 +104,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
         if isNewConverstion{
             print("Create Conversation in DB")
             let message: Message = Message(sender: selfSend, messageId: messageId, sentDate: Date(), kind: .text(text))
-            DatabaseManger.shared.createNewConversation(with: otherUserEmail, firstMessagse: message, completion: {success in
+            DatabaseManger.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", firstMessagse: message, completion: {success in
                 if success{
                     print("New conversation created")
                 }else{
@@ -98,10 +121,13 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
     
     private func createMessageId() -> String? {
         
-        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email"), let dateString = Self.dateFormater?.string(from: Date()) else{
+        
+        
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String, let  dateString = Self.dateFormater?.string(from: Date()) else{
             return nil
         }
-        let newIdentifier = "\(otherUserEmail)_\(currentUserEmail)_\(dateString)"
+        let safeCurrentUserEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail)
+        let newIdentifier = "\(otherUserEmail)_\(safeCurrentUserEmail)_\(dateString)"
         return newIdentifier
     }
     

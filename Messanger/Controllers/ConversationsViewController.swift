@@ -9,14 +9,28 @@
 import UIKit
 import FirebaseAuth
 
+struct Conversation{
+    let id: String
+    let name: String
+    let otherEmail: String
+    let latestMessasge: latestMessasge
+}
+struct latestMessasge {
+    let text: String
+    let date: String
+    let isRead: Bool
+}
 class ConversationsViewController: UIViewController {
-
+    
+    private var conversations = [Conversation]()
     let tableView: UITableView = {
        let table = UITableView()
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+//        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        table.register(ConversationTableViewCell.self, forCellReuseIdentifier: ConversationTableViewCell.identifier)
         table.isHidden = true
         return table
     }()
+    
     let noConversationLable: UILabel = {
        let label = UILabel()
         label.text = "No Conversation Found!"
@@ -34,6 +48,7 @@ class ConversationsViewController: UIViewController {
         //DatabaseManger.shared.test()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(rightBarButtonTap))
         setupTableView()
+        startListeningForConversation()
         print("1 viewDidLoad")
     }
     override func viewDidLayoutSubviews() {
@@ -48,6 +63,25 @@ class ConversationsViewController: UIViewController {
         fetchConversation()
         print("3 viewDidAppear")
     }
+    private func startListeningForConversation(){
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else{
+            return
+        }
+        let safeEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail)
+        DatabaseManger.shared.getAllConversation(for: safeEmail, completion: {[weak self] result in
+            switch result{
+            case .success(let conversations):
+                print("coversations is \(conversations)")
+                guard !conversations.isEmpty else{
+                    return
+                }
+                self?.conversations = conversations
+            case .failure(let error):
+            print("Conversation Listening Error \(error)")
+            }
+        })
+    }
+    
     private func setupTableView(){
         tableView.delegate = self
         tableView.dataSource = self

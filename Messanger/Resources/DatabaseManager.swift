@@ -118,7 +118,7 @@ extension DatabaseManger{
 }
 extension DatabaseManger{
     /// Create new messagse with target email and first conversation
-    public func createNewConversation(with otherUserEmail: String, firstMessagse: Message, completion: @escaping (Bool) -> Void){
+    public func createNewConversation(with otherUserEmail: String, name: String, firstMessagse: Message, completion: @escaping (Bool) -> Void){
         guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else{
             return
         }
@@ -133,10 +133,11 @@ extension DatabaseManger{
             completion(true)
             print(userNode)
             let messageDate = firstMessagse.sentDate
-            var message = ""
+            let dateString = ChatViewController.dateFormater?.string(from: messageDate)
+            var messageMedia = ""
             switch firstMessagse.kind{
             case .text(let messageText):
-                message = messageText
+                messageMedia = messageText
             case .attributedText(_):
                 break
             case .photo(_):
@@ -156,13 +157,15 @@ extension DatabaseManger{
 //            @unknown default:
 //                break
             }
-            let dateString = ChatViewController.dateFormater?.string(from: messageDate)
+            
+            let convId = "coversations_\(firstMessagse.messageId)"
             let conversationData: [String : Any] = [
-                "id": "coversations_\(firstMessagse.messageId)",
+                "id": convId,
                                "other_user_email": otherUserEmail,
+                               "name": name,
                                "lates_message": [
                                 "date": dateString!,
-                                   "message": message,
+                                   "message": messageMedia,
                                    "is_read": false
                                ]
                                ]
@@ -172,13 +175,14 @@ extension DatabaseManger{
                 // you should append
                 conversations.append(conversationData)
                 userNode["conversations"] = conversations
-                ref.setValue(userNode, withCompletionBlock: {error, _ in
+                ref.setValue(userNode, withCompletionBlock: {[weak self]error, _ in
                                    guard error == nil else{
                                        completion(false)
                                        print("create new conversation failed")
                                        return
                                    }
-                                   completion(true)
+                    self?.finishingCoversation(conversationId: convId, name: name, firstMessagse: firstMessagse, completion: completion)
+                                   //completion(true)
                                })
             }else{
                 // coversation does not exist
@@ -186,52 +190,85 @@ extension DatabaseManger{
                 userNode["conversations"] = [
                 conversationData
                 ]
-                ref.setValue(userNode, withCompletionBlock: {error, _ in
+                ref.setValue(userNode, withCompletionBlock: {[weak self]error, _ in
                     guard error == nil else{
                         completion(false)
                         print("create new conversation failed")
                         return
                     }
-                    completion(true)
+                    self?.finishingCoversation(conversationId: convId, name: name, firstMessagse: firstMessagse, completion: completion)
+                    //completion(true)
                 })
             }
+//            self.inserIntoMessage(messageId: convId, messageContent: message, completion: { success in
+//                if success{
+//                    print("messasge insert success")
+//                }else{
+//                    print("message insert failed")
+//                }
+//            })
         })
         
     }
-    
-    private func inserIntoMessage(messageId: String, messageContent: String, completion: @escaping (Bool) -> Void){
-        let ref = database.child(messageId)
-        let myMessage: [String: Any] = [
-            
-            "message_id": messageId,
-            "content": messageContent
-            
+    private func finishingCoversation(conversationId: String, name: String, firstMessagse: Message, completion: @escaping (Bool) -> Void){
+        
+        let messageDate = firstMessagse.sentDate
+        let dateString = ChatViewController.dateFormater?.string(from: messageDate)
+        guard let currentUser = UserDefaults.standard.value(forKey: "email") as? String else{
+            return
+        }
+        let safeCurrentUserEmail = DatabaseManger.safeEmail(emailAddress: currentUser)
+                    var messageMedia = ""
+                    switch firstMessagse.kind{
+                    case .text(let messageText):
+                        messageMedia = messageText
+                    case .attributedText(_):
+                        break
+                    case .photo(_):
+                        break
+                    case .video(_):
+                        break
+                    case .location(_):
+                        break
+                    case .emoji(_):
+                        break
+                    case .audio(_):
+                        break
+                    case .contact(_):
+                        break
+                    case .custom(_):
+                        break
+        //            @unknown default:
+        //                break
+                    }
+        
+        let collectionOfMessage: [String: Any] = [
+            "id": firstMessagse.messageId,
+            "type": firstMessagse.kind.messageKindString,
+            "content": messageMedia,
+            "date": dateString!,
+            "sender_email": safeCurrentUserEmail,
+            "name": name,
+            "is_read": false
         ]
-        ref.observeSingleEvent(of: .value, with: {snapshot in
-            guard var currentStuff = snapshot.value as? [String: Any] else{
-                print("faild to guard current Stuff")
-                return
-            }
-            if var currentStuffMessasge = currentStuff["message"] as? [[String: Any]]{
-                currentStuffMessasge.append(myMessage)
-            }else{
-                currentStuff["message"] = [
-                myMessage
-                ]
-            }
-            ref.setValue(currentStuff, withCompletionBlock: {error,_ in
-                guard error == nil else{
-                    print("Messasge set value error: \(String(describing: error))")
-                    completion(false)
-                    return
-                }
-                print("insert in Messasge success")
-                completion(true)
-            })
+        
+        let value: [String: Any] = [
+            "message": [collectionOfMessage]
+        ]
+        database.child("\(conversationId)").setValue(value, withCompletionBlock: {error,_ in
+            guard error == nil else{
+                               print("Messasge set value error: \(String(describing: error))")
+                               completion(false)
+                               return
+                           }
+                           print("insert in Messasge success")
+                           completion(true)
         })
     }
+    
+    
     /// Fetch and return all conversation for the user with passed in email
-    public func getAllConversation(for email: String, completion: @escaping (Result<String, Error>) -> Void){
+    public func getAllConversation(for email: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
         
     }
     /// Get all conversation 

@@ -19,6 +19,7 @@
 		3B5B947C24B874F00003B3EC /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B947B24B874F00003B3EC /* VideoPlayerViewController.swift */; };
 		3B5B947E24B8753B0003B3EC /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B947D24B8753B0003B3EC /* NewConversationViewController.swift */; };
 		3B5B948024B875500003B3EC /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B947F24B875500003B3EC /* ProfileViewController.swift */; };
+		3B6C5F8824E38EDD000349DD /* ConversationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C5F8724E38EDD000349DD /* ConversationTableViewCell.swift */; };
 		3B6F91DD24C34AC5005D7C6E /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6F91DC24C34AC5005D7C6E /* DatabaseManager.swift */; };
 		3B9FA5B824CE9EAA0091651A /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9FA5B724CE9EAA0091651A /* ChatViewController.swift */; };
 		3BE2222924D1206E0066137C /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE2222824D1206E0066137C /* StorageManager.swift */; };
@@ -42,6 +43,7 @@
 		3B5B947B24B874F00003B3EC /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
 		3B5B947D24B8753B0003B3EC /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
 		3B5B947F24B875500003B3EC /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		3B6C5F8724E38EDD000349DD /* ConversationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationTableViewCell.swift; sourceTree = "<group>"; };
 		3B6F91DC24C34AC5005D7C6E /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		3B9FA5B724CE9EAA0091651A /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		3BE2222824D1206E0066137C /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 			children = (
 				3B5B947224B8738D0003B3EC /* Storyboards */,
 				3B5B946224B872C50003B3EC /* Assets.xcassets */,
+				3B6C5F8724E38EDD000349DD /* ConversationTableViewCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -320,6 +323,7 @@
 				3B5B945E24B872C20003B3EC /* ConversationsViewController.swift in Sources */,
 				3B5B947C24B874F00003B3EC /* VideoPlayerViewController.swift in Sources */,
 				3B5B945A24B872C20003B3EC /* AppDelegate.swift in Sources */,
+				3B6C5F8824E38EDD000349DD /* ConversationTableViewCell.swift in Sources */,
 				3B5B948024B875500003B3EC /* ProfileViewController.swift in Sources */,
 				3B5B945C24B872C20003B3EC /* SceneDelegate.swift in Sources */,
 				3B5B947924B874CE0003B3EC /* PhotoViewerViewController.swift in Sources */,
