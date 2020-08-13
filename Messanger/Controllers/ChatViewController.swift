@@ -59,20 +59,24 @@ class ChatViewController: MessagesViewController {
         guard let email = UserDefaults.standard.value(forKey: "email") as? String else{
             return nil
         }
-        return Sender(senderId: "", displayName: email, senderPhoto: "")
+        let safeEmailCurrentUser = DatabaseManger.safeEmail(emailAddress: email)
+        return Sender(senderId: safeEmailCurrentUser, displayName: "Me", senderPhoto: "")
     }
 
-    //    let message: [Message] = []
-    let message = [Message]()
+//        var message: [Message] = []
+          var message = [Message]()
     
     //let message: [Message] = [Message(sender: senderOne, messageId: "m1", sentDate: Date(), kind: .text("This is my first Message to you.")), Message(sender: senderOne, messageId: "m2", sentDate: Date(), kind: .text("This is my first Message to you. This is my first Message to you. This is my first Message to you. This is my first Message to you.")),]
     
     public var isNewConverstion = false
     public let otherUserEmail: String
-    
-    init(with email: String) {
+    private let conversationId: String?
+
+    init(with email: String, id: String?) {
         self.otherUserEmail = email
+        self.conversationId = id
         super.init(nibName: nil, bundle: nil)
+       
     }
     
     required init?(coder: NSCoder) {
@@ -87,6 +91,28 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.messagesLayoutDelegate = self
         messageInputBar.delegate = self
+        if let conversationId = conversationId{
+            listenForMessage(id: conversationId, shouldScrolToBottom: true)
+               }
+    }
+    private func listenForMessage(id: String, shouldScrolToBottom: Bool){
+        DatabaseManger.shared.getAllMessageForConversation(with: id, completion: {[weak self] result in
+            switch result{
+            case .success(let message):
+                guard !message.isEmpty else{
+                    return
+                }
+                self?.message = message
+                DispatchQueue.main.async {
+                    self?.messagesCollectionView.reloadDataAndKeepOffset()
+                    if shouldScrolToBottom{
+                        self?.messagesCollectionView.scrollToLastItem() //scrollToBottom()
+                    }
+                }
+            case .failure(let error):
+                print("Get all message for conversation is failed: \(error)")
+            }
+        })
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
@@ -134,13 +160,10 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
 }
 extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, MessagesDisplayDelegate{
     func currentSender() -> SenderType {
-        guard let sender = selfSender else {
-//            fatalError("Self sender is nil, email should be cached")
-           return Sender(senderId: "420", displayName: "Empty", senderPhoto: "")
+        if let sender = selfSender {
+            return sender
         }
-           return sender
-        
-        
+        fatalError("Self sender is nil, email should be cached")
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {

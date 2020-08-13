@@ -19,9 +19,9 @@ class DatabaseManger{
         safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
         return safeEmail
     }
-//    public func test(){
-//        database.child("uniqueId2").setValue(["Name":"Opu", "Age":29])
-//    }
+    //    public func test(){
+    //        database.child("uniqueId2").setValue(["Name":"Opu", "Age":29])
+    //    }
 }
 extension DatabaseManger{
     public func userExist(with email: String, completion: @escaping ((Bool) -> Void)){
@@ -40,68 +40,68 @@ extension DatabaseManger{
     }
     
     public func insertUser(with user: ChatAppUser, completion: @escaping (Bool) -> Void){
-            database.child(user.safeEmail).setValue([
-                "firstname": user.firstName,
-                "lastname": user.lastName,
-                //"emailaddress": user.safeEmail,
-                //"password": user.password
-                ],withCompletionBlock: {error,_ in
-                    guard error == nil else{
-                        print("Failed to write on database \(String(describing: error))")
-                        completion(false)
-                        return
-                    }
-                    self.database.child("users").observeSingleEvent(of: .value, with: {snapshot in
-                        if var usersCollection = snapshot.value as? [[String: String]]{
-                         let newUser = [
+        database.child(user.safeEmail).setValue([
+            "firstname": user.firstName,
+            "lastname": user.lastName,
+            //"emailaddress": user.safeEmail,
+            //"password": user.password
+            ],withCompletionBlock: {error,_ in
+                guard error == nil else{
+                    print("Failed to write on database \(String(describing: error))")
+                    completion(false)
+                    return
+                }
+                self.database.child("users").observeSingleEvent(of: .value, with: {snapshot in
+                    if var usersCollection = snapshot.value as? [[String: String]]{
+                        let newUser = [
                             "name": user.firstName + " " + user.lastName,
                             "email": user.safeEmail
-                            ]
-                            usersCollection.append(newUser)
-                            self.database.child("users").setValue(usersCollection, withCompletionBlock: { error,_ in
-                                guard error == nil else{
-                                    print("Users Collection Error \(String(describing: error))")
-                                    return
-                                }
-                                completion(true)
-
-                            })
-                        }else{
+                        ]
+                        usersCollection.append(newUser)
+                        self.database.child("users").setValue(usersCollection, withCompletionBlock: { error,_ in
+                            guard error == nil else{
+                                print("Users Collection Error \(String(describing: error))")
+                                return
+                            }
+                            completion(true)
                             
-                            let newCollection: [[String: String]] = [
-                                [
-                            "name": user.firstName + " " + user.lastName,
-                            "email": user.safeEmail
-                            ]
-                            ]
-                            self.database.child("users").setValue(newCollection, withCompletionBlock: { error,_ in
-                                guard error == nil else{
-                                    print("New User Collection Error \(String(describing: error))")
-                                    return
-                                }
-                                completion(true)
                         })
-                        }
-                    })
-                    //completion(true)
-            })
+                    }else{
+                        
+                        let newCollection: [[String: String]] = [
+                            [
+                                "name": user.firstName + " " + user.lastName,
+                                "email": user.safeEmail
+                            ]
+                        ]
+                        self.database.child("users").setValue(newCollection, withCompletionBlock: { error,_ in
+                            guard error == nil else{
+                                print("New User Collection Error \(String(describing: error))")
+                                return
+                            }
+                            completion(true)
+                        })
+                    }
+                })
+                //completion(true)
+        })
+    }
+    public struct ChatAppUser{
+        let firstName: String
+        let lastName: String
+        let emailAddress: String
+        //let password: String
+        //        let profilePictureURL: String
+        
+        var  safeEmail: String {
+            var safeEmail = emailAddress.replacingOccurrences(of: ".", with: "-")
+            safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
+            return safeEmail
         }
-        public struct ChatAppUser{
-             let firstName: String
-             let lastName: String
-             let emailAddress: String
-             //let password: String
-    //        let profilePictureURL: String
-           
-            var  safeEmail: String {
-                var safeEmail = emailAddress.replacingOccurrences(of: ".", with: "-")
-                safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
-                return safeEmail
-            }
-            var profilePictureURL: String{
-                return "\(safeEmail)_profile_picture.jpg"
-            }
+        var profilePictureURL: String{
+            return "\(safeEmail)_profile_picture.jpg"
         }
+    }
     public func getAllUsers(completion: @escaping (Result<[[String: String]], Error>)->Void){
         database.child("users").observeSingleEvent(of: .value
             , with: {snapshot in
@@ -124,7 +124,7 @@ extension DatabaseManger{
         }
         let safeEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail)
         let ref = database.child("\(safeEmail)")
-        ref.observeSingleEvent(of: .value, with: {snapshot in
+        ref.observeSingleEvent(of: .value, with: {[weak self] snapshot in
             guard var userNode = snapshot.value as? [String: Any?] else{
                 print("User not found")
                 completion(false)
@@ -154,41 +154,63 @@ extension DatabaseManger{
                 break
             case .custom(_):
                 break
-//            @unknown default:
-//                break
+                //            @unknown default:
+                //                break
             }
             
             let convId = "coversations_\(firstMessagse.messageId)"
             let conversationData: [String : Any] = [
                 "id": convId,
-                               "other_user_email": otherUserEmail,
-                               "name": name,
-                               "lates_message": [
-                                "date": dateString!,
-                                   "message": messageMedia,
-                                   "is_read": false
-                               ]
-                               ]
-            
+                "other_user_email": otherUserEmail,
+                "name": name,
+                "lates_message": [
+                    "date": dateString!,
+                    "message": messageMedia,
+                    "is_read": false
+                ]
+            ]
+            let recipent_conversationData: [String : Any] = [
+                           "id": convId,
+                           "other_user_email": safeEmail,
+                           "name": safeEmail,
+                           "lates_message": [
+                               "date": dateString!,
+                               "message": messageMedia,
+                               "is_read": false
+                           ]
+                       ]
+            // Update recipent user conversation
+            self?.database.child("\(otherUserEmail)/conversations").observeSingleEvent(of: .value, with: {[weak self] snapshot in
+                if var conversations = snapshot.value as? [[String: Any]]{
+                    //appent
+                    conversations.append(recipent_conversationData)
+                    self?.database.child("\(otherUserEmail)/conversations").setValue(conversations)
+                }else{
+                    // create
+                self?.database.child("\(otherUserEmail)/conversations").setValue([recipent_conversationData])
+                }
+                
+            })
+            // Update current user conversation entry
             if var conversations = userNode["conversations"] as? [[String: Any]]{
                 // coversation array exit for current user
                 // you should append
                 conversations.append(conversationData)
                 userNode["conversations"] = conversations
                 ref.setValue(userNode, withCompletionBlock: {[weak self]error, _ in
-                                   guard error == nil else{
-                                       completion(false)
-                                       print("create new conversation failed")
-                                       return
-                                   }
+                    guard error == nil else{
+                        completion(false)
+                        print("create new conversation failed")
+                        return
+                    }
                     self?.finishingCoversation(conversationId: convId, name: name, firstMessagse: firstMessagse, completion: completion)
-                                   //completion(true)
-                               })
+                    //completion(true)
+                })
             }else{
                 // coversation does not exist
                 //create new conversation
                 userNode["conversations"] = [
-                conversationData
+                    conversationData
                 ]
                 ref.setValue(userNode, withCompletionBlock: {[weak self]error, _ in
                     guard error == nil else{
@@ -200,13 +222,13 @@ extension DatabaseManger{
                     //completion(true)
                 })
             }
-//            self.inserIntoMessage(messageId: convId, messageContent: message, completion: { success in
-//                if success{
-//                    print("messasge insert success")
-//                }else{
-//                    print("message insert failed")
-//                }
-//            })
+            //            self.inserIntoMessage(messageId: convId, messageContent: message, completion: { success in
+            //                if success{
+            //                    print("messasge insert success")
+            //                }else{
+            //                    print("message insert failed")
+            //                }
+            //            })
         })
         
     }
@@ -218,29 +240,29 @@ extension DatabaseManger{
             return
         }
         let safeCurrentUserEmail = DatabaseManger.safeEmail(emailAddress: currentUser)
-                    var messageMedia = ""
-                    switch firstMessagse.kind{
-                    case .text(let messageText):
-                        messageMedia = messageText
-                    case .attributedText(_):
-                        break
-                    case .photo(_):
-                        break
-                    case .video(_):
-                        break
-                    case .location(_):
-                        break
-                    case .emoji(_):
-                        break
-                    case .audio(_):
-                        break
-                    case .contact(_):
-                        break
-                    case .custom(_):
-                        break
-        //            @unknown default:
-        //                break
-                    }
+        var messageMedia = ""
+        switch firstMessagse.kind{
+        case .text(let messageText):
+            messageMedia = messageText
+        case .attributedText(_):
+            break
+        case .photo(_):
+            break
+        case .video(_):
+            break
+        case .location(_):
+            break
+        case .emoji(_):
+            break
+        case .audio(_):
+            break
+        case .contact(_):
+            break
+        case .custom(_):
+            break
+            //            @unknown default:
+            //                break
+        }
         
         let collectionOfMessage: [String: Any] = [
             "id": firstMessagse.messageId,
@@ -257,22 +279,71 @@ extension DatabaseManger{
         ]
         database.child("\(conversationId)").setValue(value, withCompletionBlock: {error,_ in
             guard error == nil else{
-                               print("Messasge set value error: \(String(describing: error))")
-                               completion(false)
-                               return
-                           }
-                           print("insert in Messasge success")
-                           completion(true)
+                print("Messasge set value error: \(String(describing: error))")
+                completion(false)
+                return
+            }
+            print("insert in Messasge success")
+            completion(true)
         })
     }
     
     
     /// Fetch and return all conversation for the user with passed in email
     public func getAllConversation(for email: String, completion: @escaping (Result<[Conversation], Error>) -> Void){
-        
+        database.child("\(email)/conversations").observe(.value, with: { snapshot in
+            guard let value = snapshot.value as? [[String: Any]] else{
+                completion(.failure(DatabaseError.FetchToFetch))
+                return
+            }
+            let conversations: [Conversation] = value.compactMap({dictionary in
+                guard let conversationId = dictionary["id"] as? String,
+                    let name = dictionary["name"] as? String,
+                    let otherEmail = dictionary["other_user_email"] as? String,
+                    let latestMessasge = dictionary["lates_message"] as? [String: Any],
+                    let text = latestMessasge["message"] as? String,
+                    let date = latestMessasge["date"] as? String,
+                    let isRead = latestMessasge["is_read"] as? Bool else{
+                        completion(.failure(DatabaseError.FetchToFetch))
+                        print("Conversation array conpact map failed")
+                        return nil
+                }
+                let latestMessageObject = LatestMessasge(text: text, date: date, isRead: isRead)
+                return Conversation(id: conversationId, name: name, otherEmail: otherEmail, latestMessasge: latestMessageObject)
+            })
+            completion(.success(conversations))
+            
+        })
     }
     /// Get all conversation 
-    public func getAllMessageForConversation(with id: String, completion: @escaping (Result<String, Error>) -> Void){
+    public func getAllMessageForConversation(with id: String, completion: @escaping (Result<[Message], Error>) -> Void){
+        
+        
+        database.child("\(id)/message").observe(.value, with: { snapshot in
+            guard let value = snapshot.value as? [[String: Any]] else{
+                completion(.failure(DatabaseError.FetchToFetch))
+                return
+            }
+            let message: [Message] = value.compactMap({dictionary in
+                
+                guard let messageId = dictionary["id"] as? String,
+                    let type = dictionary["type"] as? String,
+                    let content = dictionary["content"] as? String,
+                let date = dictionary["date"] as? String,
+                let sender_email = dictionary["sender_email"] as? String,
+                let name = dictionary["name"] as? String,
+                    let is_read = dictionary["is_read"] as? Bool, let dateString = ChatViewController.dateFormater?.date(from: date)
+                     else{
+                        completion(.failure(DatabaseError.FetchToFetch))
+                        print("Message array conpact map failed")
+                        return nil
+                }
+                    let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
+                return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: .text(content))
+            })
+            completion(.success(message))
+            
+        })
         
     }
     /// Send a message with targer conversation and message

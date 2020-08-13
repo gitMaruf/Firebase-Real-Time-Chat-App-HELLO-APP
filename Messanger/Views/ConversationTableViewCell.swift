@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 class ConversationTableViewCell: UITableViewCell {
     
@@ -46,8 +47,22 @@ class ConversationTableViewCell: UITableViewCell {
         userMessageLabel.frame = CGRect(x: userImageView.frame.width + 20, y: userNameLabel.frame.height+15, width: contentView.frame.width - userImageView.frame.width - 20, height: (contentView.frame.height-20)/2)
     }
     
-    public func configure(with model: String){
-        
+    public func configure(with model: Conversation){
+        userNameLabel.text = model.name
+        userMessageLabel.text = model.latestMessasge.text
+        let otherUserEmail = model.otherEmail
+         let safeOtherUserEmail = DatabaseManger.safeEmail(emailAddress: otherUserEmail)
+        let path = "images/\(safeOtherUserEmail)_profile_picture.jpg"
+        StorageManager.shared.downloadProfilePicture(with: path, completion: {[weak self] result in
+            switch result{
+            case .success(let url):
+                DispatchQueue.main.async {
+                    self?.userImageView.sd_setImage(with: url, completed: nil)
+                }
+            case .failure(let error):
+                print("User Image download error: \(error)")
+            }
+        })
     }
     
     required init?(coder: NSCoder) {
