@@ -116,10 +116,23 @@ extension DatabaseManger{
         case FetchToFetch
     }
 }
+
+extension DatabaseManger{
+    public func getUser(with path: String, completion: @escaping (Result<Any, Error>) ->Void ){
+        self.database.child(path).observeSingleEvent(of: .value, with: {snapshot in
+            guard let value = snapshot.value else{
+                completion(.failure(DatabaseError.FetchToFetch))
+                return
+            }
+            completion(.success(value))
+        })
+    }
+}
+
 extension DatabaseManger{
     /// Create new messagse with target email and first conversation
     public func createNewConversation(with otherUserEmail: String, name: String, firstMessagse: Message, completion: @escaping (Bool) -> Void){
-        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else{
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String, let currentUserName = UserDefaults.standard.value(forKey: "name") as? String else{
             return
         }
         let safeEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail)
@@ -170,15 +183,15 @@ extension DatabaseManger{
                 ]
             ]
             let recipent_conversationData: [String : Any] = [
-                           "id": convId,
-                           "other_user_email": safeEmail,
-                           "name": safeEmail,
-                           "lates_message": [
-                               "date": dateString!,
-                               "message": messageMedia,
-                               "is_read": false
-                           ]
-                       ]
+                "id": convId,
+                "other_user_email": safeEmail,
+                "name": currentUserName,
+                "lates_message": [
+                    "date": dateString!,
+                    "message": messageMedia,
+                    "is_read": false
+                ]
+            ]
             // Update recipent user conversation
             self?.database.child("\(otherUserEmail)/conversations").observeSingleEvent(of: .value, with: {[weak self] snapshot in
                 if var conversations = snapshot.value as? [[String: Any]]{
@@ -187,7 +200,7 @@ extension DatabaseManger{
                     self?.database.child("\(otherUserEmail)/conversations").setValue(conversations)
                 }else{
                     // create
-                self?.database.child("\(otherUserEmail)/conversations").setValue([recipent_conversationData])
+                    self?.database.child("\(otherUserEmail)/conversations").setValue([recipent_conversationData])
                 }
                 
             })
@@ -329,16 +342,16 @@ extension DatabaseManger{
                 guard let messageId = dictionary["id"] as? String,
                     let type = dictionary["type"] as? String,
                     let content = dictionary["content"] as? String,
-                let date = dictionary["date"] as? String,
-                let sender_email = dictionary["sender_email"] as? String,
-                let name = dictionary["name"] as? String,
+                    let date = dictionary["date"] as? String,
+                    let sender_email = dictionary["sender_email"] as? String,
+                    let name = dictionary["name"] as? String,
                     let is_read = dictionary["is_read"] as? Bool, let dateString = ChatViewController.dateFormater?.date(from: date)
-                     else{
+                    else{
                         completion(.failure(DatabaseError.FetchToFetch))
                         print("Message array conpact map failed")
                         return nil
                 }
-                    let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
+                let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
                 return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: .text(content))
             })
             completion(.success(message))
@@ -347,7 +360,155 @@ extension DatabaseManger{
         
     }
     /// Send a message with targer conversation and message
-    public func sendMessage(to conversation: String, completion: @escaping (Bool) -> Void){
-        
+    public func sendMessage(to conversationId: String, otherUserEmail: String, name: String, newMessasge: Message, completion: @escaping (Bool) -> Void){
+        // update new messasge to message
+        // update sender latest message
+        // update recipent latest messagse
+        database.child("\(conversationId)/message").observeSingleEvent(of: .value, with: {[weak self] snapshot in
+            guard var currentMessage = snapshot.value as? [[String: Any]], let strongSelf = self else{
+                completion(false)
+                return
+            }
+            
+            
+            let messageDate = newMessasge.sentDate
+            let dateString = ChatViewController.dateFormater?.string(from: messageDate)
+            guard let currentUser = UserDefaults.standard.value(forKey: "email") as? String else{
+                return
+            }
+            let safeCurrentUserEmail = DatabaseManger.safeEmail(emailAddress: currentUser)
+            var messageMedia = ""
+            switch newMessasge.kind{
+            case .text(let messageText):
+                messageMedia = messageText
+            case .attributedText(_):
+                break
+            case .photo(_):
+                break
+            case .video(_):
+                break
+            case .location(_):
+                break
+            case .emoji(_):
+                break
+            case .audio(_):
+                break
+            case .contact(_):
+                break
+            case .custom(_):
+                break
+                //            @unknown default:
+                //                break
+            }
+            
+            let newMessasge: [String: Any] = [
+                "id": newMessasge.messageId,
+                "type": newMessasge.kind.messageKindString,
+                "content": messageMedia,
+                "date": dateString!,
+                "sender_email": safeCurrentUserEmail,
+                "name": name,
+                "is_read": false
+            ]
+            
+            //                let value: [String: Any] = [
+            //                    "message": [newMessasge]
+            //                ]
+            
+            currentMessage.append(newMessasge)
+            strongSelf.database.child("\(conversationId)/message").setValue(currentMessage, withCompletionBlock: {error,_ in
+                guard error == nil else{
+                    print("New message set value error: \(String(describing: error))")
+                    completion(false)
+                    return
+                }
+                print("Create new message into messasge is success")
+                
+                
+                strongSelf.database.child(("\(safeCurrentUserEmail)/conversations")).observeSingleEvent(of: .value, with: {snapshot in
+                    guard var currentUserConversation = snapshot.value as? [[String: Any]] else{
+                        completion(false)
+                        return
+                    }
+                    let updateMessageValue: [String: Any] = [
+                        "date": dateString!,
+                        "is_read": false,
+                        "message": messageMedia
+                    ]
+                    var position = 0
+                    var targetConversation: [String: Any]?
+                    for item in currentUserConversation{
+                        if let targetId = item["id"] as? String, targetId == conversationId{
+                            //item["lates_message"] = updateMessageValue
+                            targetConversation = item
+                            break
+                        }
+                        position += 1
+                    }
+                    
+                    targetConversation?["lates_message"] = updateMessageValue
+                    guard let finalLatestMessage = targetConversation else{
+                        completion(false)
+                        return
+                    }
+                    currentUserConversation[position] = finalLatestMessage
+                    strongSelf.database.child(("\(safeCurrentUserEmail)/conversations")).setValue(currentUserConversation, withCompletionBlock: {error,_ in
+                        guard error == nil else{
+                            print("Failed conversation for current user: \(String(describing: error))")
+                            completion(false)
+                            return
+                        }
+                        print("Insert conversation for current user")
+                        
+                        // Update latest message for receiving
+                        strongSelf.database.child(("\(otherUserEmail)/conversations")).observeSingleEvent(of: .value, with: {snapshot in
+                            guard var otherUserConversation = snapshot.value as? [[String: Any]] else{
+                                completion(false)
+                                return
+                            }
+                            
+                            position = 0
+                            var targetConversation: [String: Any]?
+                            for item in otherUserConversation{
+                                if let targetId = item["id"] as? String, targetId == conversationId{
+                                    //item["lates_message"] = updateMessageValue
+                                    targetConversation = item
+                                    break
+                                }
+                                position += 1
+                            }
+                            targetConversation?["lates_message"] = updateMessageValue
+                            guard let finalLatestMessage = targetConversation else{
+                                completion(false)
+                                return
+                            }
+                            otherUserConversation[position] = finalLatestMessage
+                            strongSelf.database.child(("\(otherUserEmail)/conversations")).setValue(otherUserConversation, withCompletionBlock: {error,_ in
+                                guard error == nil else{
+                                    print("Failed conversation for other user: \(String(describing: error))")
+                                    completion(false)
+                                    return
+                                }
+                                print("Insert conversation for other user")
+                                completion(true)
+                            })
+                        })
+                        
+                        
+                        
+                        completion(true)
+                    })
+                })
+                
+                //completion(true)
+            })
+            
+            
+            
+        })
     }
+    
+    
+    
+    
 }

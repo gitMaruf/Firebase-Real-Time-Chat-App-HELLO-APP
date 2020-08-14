@@ -56,11 +56,13 @@ class ChatViewController: MessagesViewController {
         return dateformater
     }()
     private var selfSender: Sender? {
-        guard let email = UserDefaults.standard.value(forKey: "email") as? String else{
+        guard let email = UserDefaults.standard.value(forKey: "email") as? String,
+        let name = UserDefaults.standard.value(forKey: "name") as? String else{
             return nil
         }
         let safeEmailCurrentUser = DatabaseManger.safeEmail(emailAddress: email)
-        return Sender(senderId: safeEmailCurrentUser, displayName: "Me", senderPhoto: "")
+//        print("User Default Name: \(name) and emain: \(email)")
+        return Sender(senderId: safeEmailCurrentUser, displayName: name, senderPhoto: "")
     }
 
 //        var message: [Message] = []
@@ -127,12 +129,14 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
         }
         print("Sending: \(text)")
         // Send Message
+         let message: Message = Message(sender: selfSend, messageId: messageId, sentDate: Date(), kind: .text(text))
         if isNewConverstion{
             print("Create Conversation in DB")
-            let message: Message = Message(sender: selfSend, messageId: messageId, sentDate: Date(), kind: .text(text))
-            DatabaseManger.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", firstMessagse: message, completion: {success in
+           
+            DatabaseManger.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", firstMessagse: message, completion: {[weak self] success in
                 if success{
                     print("New conversation created")
+                    self?.isNewConverstion = false
                 }else{
                     print("New Conversation Creation Failed")
                 }
@@ -140,6 +144,18 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
             
         }else{
             print("Append to existance DB")
+            guard let conversationId = conversationId, let name = self.title else{
+                return
+            }
+           
+            DatabaseManger.shared.sendMessage(to: conversationId, otherUserEmail: otherUserEmail, name: name, newMessasge: message, completion: {success in
+                if success{
+                    print("messagse sent")
+                }else{
+                    print("Message send failed")
+                }
+            })
+            
         }
         
     }

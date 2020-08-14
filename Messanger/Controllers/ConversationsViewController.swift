@@ -79,7 +79,7 @@ class ConversationsViewController: UIViewController {
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
-            print("Conversation Listening Error \(error)")
+            print("Conversation Listening Error(No Conversation Found) \(error)")
             }
         })
     }

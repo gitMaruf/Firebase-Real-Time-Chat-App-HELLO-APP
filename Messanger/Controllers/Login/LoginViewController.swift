@@ -203,7 +203,25 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
                 strongSelf.hud.dismiss()
             }
             let user = result.user
+            
+            let safeEmail = DatabaseManger.safeEmail(emailAddress: email)
+            DatabaseManger.shared.getUser(with: safeEmail, completion: {result in
+                switch result{
+                case .success(let data):
+                    guard let userData = data as? [String: Any],
+                        let firstName = userData["firstname"] as? String,
+                        let lastName = userData["lastname"] as? String else{
+                            print("User first name and last name not found")
+                            return
+                    }
+                    UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+
+                case .failure(let error):
+                    print("User first name and last name cached error \(error)")
+                }
+            })
             UserDefaults.standard.set(email, forKey: "email")
+
             print("Login Successful \(user)")
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         }
@@ -257,7 +275,8 @@ extension LoginViewController: LoginButtonDelegate{
                 return
             }
             UserDefaults.standard.set(email, forKey: "email")
-
+            UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
+            
             let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
             // If not exist insert into database and authentication
             DatabaseManger.shared.userExist(with: "email") { exists in
