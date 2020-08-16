@@ -10,6 +10,7 @@ import UIKit
 import Foundation
 import MessageKit
 import InputBarAccessoryView
+import SDWebImage
 
 struct Message: MessageType{
     public var sender: SenderType
@@ -46,7 +47,17 @@ extension MessageKind{
         }
     }
 }
-
+struct mediaItem: MediaItem{
+    var url: URL?
+    
+    var image: UIImage?
+    
+    var placeholderImage: UIImage
+    
+    var size: CGSize
+    
+    
+}
 class ChatViewController: MessagesViewController {
 
     public static let dateFormater: DateFormatter? = {
@@ -93,6 +104,7 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDataSource = self
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.messagesLayoutDelegate = self
+        messagesCollectionView.messageCellDelegate = self
         messageInputBar.delegate = self
         setupInputButton()
         if let conversationId = conversationId{
@@ -192,8 +204,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
     
     private func createMessageId() -> String? {
         
-        
-        
         guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String, let  dateString = Self.dateFormater?.string(from: Date()) else{
             return nil
         }
@@ -252,13 +262,66 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
-        guard let photoInfo = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else { return}
+        guard let photoInfo = info[UIImagePickerController.InfoKey.editedImage] as? UIImage, let data = photoInfo.pngData(), let messageId = createMessageId(), let conversationId = conversationId, let name = self.title else { return}
         //imageView.image = photoInfo
         print("Selected Photo is: ", photoInfo)
-        
+        let fileName = "photo_message_" + messageId.replacingOccurrences(of: " ", with: "-") + ".png"
+        StorageManager.shared.uploadMessagePhoto(with: data, fileName: fileName, completion: {[weak self] result in
+            guard let strongSelf = self, let selfSender = strongSelf.selfSender else{ return}
+            switch result{
+            case .failure(let error):
+                print("Message photo inser error: \(error)")
+            case .success(let urlString):
+                // now upload url string to database and change kind to .photo
+                print(" Url String is: \(urlString)")
+                let url = URL(string: urlString)
+                let currentMediaItem = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: .zero)
+                let message: Message = Message(sender: selfSender, messageId: messageId, sentDate: Date(), kind: .photo(currentMediaItem))
+                DatabaseManger.shared.sendMessage(to: conversationId, otherUserEmail: strongSelf.otherUserEmail, name: name, newMessasge: message, completion: {success in
+                    if success{
+                        print("Photo Message Sent")
+                    }else{
+                        print("Photo Message send failed")
+                    }
+                })
+            }
+        })
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
         print("Image Picker Cancel")
+    }
+    func configureMediaMessageImageView(_ imageView: UIImageView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        guard let message = message as? Message else{
+            return
+        }
+        switch message.kind{
+        case .photo(let media):
+            guard let url = media.url else{ return }
+            imageView.sd_setImage(with: url, completed: nil)
+        default:
+            break
+        }
+    }
+    
+    
+}
+extension ChatViewController: MessageCellDelegate{
+    func didTapImage(in cell: MessageCollectionViewCell) {
+        guard let indexpath = messagesCollectionView.indexPath(for: cell) else{
+            return
+        }
+        let message = self.message[indexpath.section]
+        
+        switch message.kind{
+        case .photo(let media):
+            guard let url = media.url else{ return }
+            let vc = PhotoViewerViewController(url: url)
+            self.navigationController?.pushViewController(vc, animated: true)
+        default:
+            break
+        }
+        
+        
     }
 }

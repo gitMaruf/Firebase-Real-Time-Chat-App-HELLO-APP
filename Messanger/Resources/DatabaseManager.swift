@@ -8,6 +8,7 @@
 
 import Foundation
 import FirebaseDatabase
+import MessageKit
 
 class DatabaseManger{
     
@@ -352,9 +353,20 @@ extension DatabaseManger{
                         return nil
                 }
                 let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
-                return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: .text(content))
+                var kind: MessageKind?
+                guard let url = URL(string: content) else{
+                    return nil
+                }
+                if type == "photo"{
+                let media = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: CGSize(width: 300, height: 300))
+                    kind = .photo(media)
+                }else if type == "text"{
+                    kind = .text(content)
+                }
+                guard let finalKind = kind else{ return nil}
+                return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: finalKind)
             })
-            completion(.success(message))
+            completion(.success(message))   
             
         })
         
@@ -383,8 +395,10 @@ extension DatabaseManger{
                 messageMedia = messageText
             case .attributedText(_):
                 break
-            case .photo(_):
-                break
+            case .photo(let mediaItem):
+                if let targetString = mediaItem.url?.absoluteString{
+                    messageMedia = targetString
+                }
             case .video(_):
                 break
             case .location(_):
