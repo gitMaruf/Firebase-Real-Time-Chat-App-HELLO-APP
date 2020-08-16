@@ -424,7 +424,7 @@ extension DatabaseManger{
                 }
                 print("Create new message into messasge is success")
                 
-                
+                // Update latest message for sender
                 strongSelf.database.child(("\(safeCurrentUserEmail)/conversations")).observeSingleEvent(of: .value, with: {snapshot in
                     guard var currentUserConversation = snapshot.value as? [[String: Any]] else{
                         completion(false)
@@ -445,7 +445,6 @@ extension DatabaseManger{
                         }
                         position += 1
                     }
-                    
                     targetConversation?["lates_message"] = updateMessageValue
                     guard let finalLatestMessage = targetConversation else{
                         completion(false)
@@ -459,14 +458,13 @@ extension DatabaseManger{
                             return
                         }
                         print("Insert conversation for current user")
-                        
+
                         // Update latest message for receiving
                         strongSelf.database.child(("\(otherUserEmail)/conversations")).observeSingleEvent(of: .value, with: {snapshot in
                             guard var otherUserConversation = snapshot.value as? [[String: Any]] else{
                                 completion(false)
                                 return
                             }
-                            
                             position = 0
                             var targetConversation: [String: Any]?
                             for item in otherUserConversation{
@@ -495,12 +493,12 @@ extension DatabaseManger{
                         })
                         
                         
-                        
+
                         completion(true)
                     })
                 })
                 
-                //completion(true)
+                completion(true)
             })
             
             

@@ -26,7 +26,7 @@ class RegisterViewController: UIViewController {
         return scrollView
     }()
     lazy var containerView: UIView = {
-       let containerView = UIView()
+        let containerView = UIView()
         containerView.frame.size = contentViewSize
         containerView.backgroundColor = .brown
         return containerView
@@ -42,7 +42,7 @@ class RegisterViewController: UIViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 60
-//        imageView.layer.borderWidth = 2
+        //        imageView.layer.borderWidth = 2
         imageView.clipsToBounds = true
         //imageView.layer.borderColor = UIColor.lightGray.cgColor
         imageView.tintColor = .white
@@ -117,15 +117,15 @@ class RegisterViewController: UIViewController {
         super.viewDidLoad()
         
         
-
+        
         emailFeild.delegate = self
         passwordFeild.delegate = self
         view.backgroundColor = .yellow
         view.addSubview(scrollView)
         scrollView.addSubview(containerView)
-//        containerView.addSubview(copyrightLable)
-//        copyrightLable.frame = CGRect(x: self.view.center.x, y: self.view.center.y, width: 55, height: 44)
-         
+        //        containerView.addSubview(copyrightLable)
+        //        copyrightLable.frame = CGRect(x: self.view.center.x, y: self.view.center.y, width: 55, height: 44)
+        
         setupRegisterConstraint()
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
@@ -136,20 +136,20 @@ class RegisterViewController: UIViewController {
     }
     
     fileprivate func setupRegisterConstraint(){
-             
-            let formStackView: UIStackView = UIStackView(arrangedSubviews: [firstNameFeild, lastNameFeild, emailFeild, passwordFeild, registerButton])
+        
+        let formStackView: UIStackView = UIStackView(arrangedSubviews: [firstNameFeild, lastNameFeild, emailFeild, passwordFeild, registerButton])
         formStackView.distribution = .fillEqually
-            formStackView.spacing = 15
-            formStackView.axis = .vertical
-            formStackView.backgroundColor = .cyan
-           
-            containerView.addSubview(imageView)
-            containerView.addSubview(formStackView)
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            formStackView.translatesAutoresizingMaskIntoConstraints = false
-           
-            NSLayoutConstraint.activate([
-                
+        formStackView.spacing = 15
+        formStackView.axis = .vertical
+        formStackView.backgroundColor = .cyan
+        
+        containerView.addSubview(imageView)
+        containerView.addSubview(formStackView)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        formStackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            
             imageView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 60),
             //imageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 30),
             //imageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -30),
@@ -160,78 +160,78 @@ class RegisterViewController: UIViewController {
             formStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 30),
             formStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -30),
             formStackView.heightAnchor.constraint(equalToConstant: 250)
-            ])
-        }
+        ])
+    }
     
     @objc func imageTapped(tapGestureRecognizer: UITapGestureRecognizer)
     {
-//        let tappedImage = tapGestureRecognizer.view as! UIImageView
-//        print(tappedImage.frame.size.width)
+        //        let tappedImage = tapGestureRecognizer.view as! UIImageView
+        //        print(tappedImage.frame.size.width)
         presentPhotoActionSheet()
         
     }
-
     
-
-@objc private func registerButtonTapped(){
     
-    //hud.dismiss(afterDelay: 3.0)
     
-    firstNameFeild.resignFirstResponder(); lastNameFeild.resignFirstResponder(); emailFeild.resignFirstResponder(); passwordFeild.resignFirstResponder()
-    guard let firstName = firstNameFeild.text, let lastName = lastNameFeild.text, let email = emailFeild.text, let password = passwordFeild.text, !firstName.isEmpty, !lastName.isEmpty, !email.isEmpty, !password.isEmpty, password.count >= 6 else {
+    @objc private func registerButtonTapped(){
+        
+        //hud.dismiss(afterDelay: 3.0)
+        
+        firstNameFeild.resignFirstResponder(); lastNameFeild.resignFirstResponder(); emailFeild.resignFirstResponder(); passwordFeild.resignFirstResponder()
+        guard let firstName = firstNameFeild.text, let lastName = lastNameFeild.text, let email = emailFeild.text, let password = passwordFeild.text, !firstName.isEmpty, !lastName.isEmpty, !email.isEmpty, !password.isEmpty, password.count >= 6 else {
             alertUserRegisterError()
             return
         }
         //MARK: Firebase Register
-   
-    self.hud.show(in: view)
-
-    DatabaseManger.shared.userExist(with: email) { [weak self] exists in
-        guard let strongSelf = self else { return }
-        DispatchQueue.main.async {
-            strongSelf.hud.dismiss()
-        }
-
-        guard !exists else{
-            strongSelf.alertUserRegisterError(message: "Email is already exist.")
-            return
-        }
-        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-            guard let _ = authResult, error == nil else {
+        
+        self.hud.show(in: view)
+        
+        DatabaseManger.shared.userExist(with: email) { [weak self] exists in
+            guard let strongSelf = self else { return }
+            DispatchQueue.main.async {
+                strongSelf.hud.dismiss()
+            }
+            
+            guard !exists else{
+                strongSelf.alertUserRegisterError(message: "Email is already exist.")
+                return
+            }
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                guard let _ = authResult, error == nil else {
                     print("Error Occur : ", error as Any)
                     return
                 }
-            let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
-        //        let user = result.user
-        //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
-        // MARK: - Inser user into Database
-            DatabaseManger.shared.insertUser(with: chatAppUser, completion: {success in
-                if success{
-                    guard let data = strongSelf.imageView.image?.jpegData(compressionQuality: 0.75) else{ // pngData()
-                        return
-                    }
-                    let fileName = chatAppUser.profilePictureURL
-                    StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: {result in
-                        switch(result){
-                        case .success(let downloadURL) :
-                             print("downloadURL: \(downloadURL)")
-                             UserDefaults.standard.set(downloadURL, forKey: "profilePictureURL")
-                        case .failure(let error):
-                            print("Storage Manager Error: \(error)")
+                let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
+                //        let user = result.user
+                //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                // MARK: - Inser user into Database
+                DatabaseManger.shared.insertUser(with: chatAppUser, completion: {success in
+                    if success{
+                        guard let data = strongSelf.imageView.image?.jpegData(compressionQuality: 0.75) else{ // pngData()
+                            return
                         }
-                       
-                         
-                    })
-                }
-            })
-            
-            self?.dismiss(animated: true, completion: nil)
-        //        print("Create User \(user)")
+                        let fileName = chatAppUser.profilePictureURL
+                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: {result in
+                            switch(result){
+                            case .success(let downloadURL) :
+                                print("downloadURL: \(downloadURL)")
+                                UserDefaults.standard.set(downloadURL, forKey: "profilePictureURL")
+                            case .failure(let error):
+                                print("Storage Manager Error: \(error)")
+                            }
+                            
+                            
+                        })
+                    }
+                })
+                
+                self?.dismiss(animated: true, completion: nil)
+                //        print("Create User \(user)")
             }
+            
+        }
         
-    }
-    
-    
+        
         print("Register Button Tapped")
     }
     func alertUserRegisterError(message: String = "Please enter your information correctly"){
@@ -262,8 +262,8 @@ extension RegisterViewController: UITextFieldDelegate{
 extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     
     func presentPhotoActionSheet(){
-       let alert = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Take a Photo", style: .default, handler: { [weak self] _ in
+        let alert = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { [weak self] _ in
             self?.presentCamera()
         }))
         alert.addAction(UIAlertAction(title: "Choose Photo", style: .default, handler: { [weak self] _ in

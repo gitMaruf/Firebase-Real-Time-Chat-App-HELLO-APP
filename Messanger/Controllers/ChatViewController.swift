@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 import MessageKit
 import InputBarAccessoryView
 
@@ -93,10 +94,38 @@ class ChatViewController: MessagesViewController {
         messagesCollectionView.messagesDisplayDelegate = self
         messagesCollectionView.messagesLayoutDelegate = self
         messageInputBar.delegate = self
+        setupInputButton()
         if let conversationId = conversationId{
             listenForMessage(id: conversationId, shouldScrolToBottom: true)
                }
     }
+    
+    private func setupInputButton(){
+        let button = InputBarButtonItem()
+        button.setSize(CGSize(width: 35, height: 35), animated: true)
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.onTouchUpInside{_ in
+            self.presentActionSheet()
+        }
+        print("button is working!")
+        self.messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: true)
+        messageInputBar.setStackViewItems([button], forStack: .left, animated: true)
+    }
+    private func presentActionSheet(){
+        let alert = UIAlertController(title: "Attach Media", message: "What would you like to attach", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Photo", style: .default, handler: {[weak self]_ in
+            self?.presentPhotoActionSheet()
+        }))
+        alert.addAction(UIAlertAction(title: "Video", style: .default, handler: {_ in
+            
+        }))
+        alert.addAction(UIAlertAction(title: "Audio", style: .default, handler: {_ in
+            
+        }))
+        alert.addAction(UIAlertAction(title: "Calcel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
     private func listenForMessage(id: String, shouldScrolToBottom: Bool){
         DatabaseManger.shared.getAllMessageForConversation(with: id, completion: {[weak self] result in
             switch result{
@@ -191,4 +220,45 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
     }
     
     
+}
+
+extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
+    
+    func presentPhotoActionSheet(){
+        let alert = UIAlertController(title: "Add Photo", message: "How would you like to select a picture", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Take a Photo", style: .default, handler: { [weak self] _ in
+            self?.presentCamera()
+        }))
+        alert.addAction(UIAlertAction(title: "Choose Photo", style: .default, handler: { [weak self] _ in
+            self?.presentPhotoPicker()
+        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    func presentCamera(){
+        let vc = UIImagePickerController()
+        vc.sourceType = .camera
+        vc.delegate = self
+        vc.allowsEditing = true
+        present(vc, animated: true)
+    }
+    func presentPhotoPicker(){
+        let vc = UIImagePickerController()
+        vc.sourceType = .photoLibrary
+        vc.delegate = self
+        vc.allowsEditing = true
+        present(vc, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        guard let photoInfo = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else { return}
+        //imageView.image = photoInfo
+        print("Selected Photo is: ", photoInfo)
+        
+    }
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+        print("Image Picker Cancel")
+    }
 }
