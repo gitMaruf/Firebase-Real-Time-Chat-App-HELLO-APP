@@ -264,7 +264,7 @@ extension LoginViewController: LoginButtonDelegate{
                 print("Failed to make facebook graphrequest -\(String(describing: error))")
                 return
             }
-            print("Graph Result: \(result)")
+            //print("Graph Result: \(result)")
             guard let firstName = result["first_name"] as? String,
                 let lastName = result["last_name"] as? String,
             let email = result["email"] as? String,
@@ -279,8 +279,9 @@ extension LoginViewController: LoginButtonDelegate{
             
             let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
             // If not exist insert into database and authentication
-            DatabaseManger.shared.userExist(with: "email") { exists in
-                if !exists{
+            DatabaseManger.shared.userExist(with: email) { exists in
+                print("user existance status: \(exists)")
+                if !exists{ // if false it will executed
                     DatabaseManger.shared.insertUser(with: chatAppUser, completion: {success in
                         if success{
                             guard let url = URL(string: pictuerURL) else {return}

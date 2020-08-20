@@ -30,14 +30,17 @@ extension DatabaseManger{
         var safeEmail = email.replacingOccurrences(of: ".", with: "-")
         safeEmail = safeEmail.replacingOccurrences(of: "@", with: "-")
         
-        database.child(safeEmail).observeSingleEvent(of: .value) { (snapshoot) in
-            guard snapshoot.value as? String != nil else{
+        database.child(safeEmail).observeSingleEvent(of: .value, with: { snapshoot in
+            print("safeEmail: \(safeEmail), snapshoot.value \(String(describing: snapshoot.value)) Snapsho eists: \(snapshoot.exists())")
+//            guard let userExistanceStatus = snapshoot.value as? String !=nil else{ return }
+            guard snapshoot.exists() else{
                 completion(false)
+                print("user not exist,  com: false") 
                 return
-                
             }
+            print("User already exist, com: true")
             completion(true)
-        }
+        })
     }
     
     public func insertUser(with user: ChatAppUser, completion: @escaping (Bool) -> Void){
@@ -115,6 +118,7 @@ extension DatabaseManger{
     }
     private enum DatabaseError: Error{
         case FetchToFetch
+        case CastingError
     }
 }
 
@@ -318,7 +322,7 @@ extension DatabaseManger{
                     let text = latestMessasge["message"] as? String,
                     let date = latestMessasge["date"] as? String,
                     let isRead = latestMessasge["is_read"] as? Bool else{
-                        completion(.failure(DatabaseError.FetchToFetch))
+                        completion(.failure(DatabaseError.CastingError))
                         print("Conversation array conpact map failed")
                         return nil
                 }
@@ -334,10 +338,24 @@ extension DatabaseManger{
         
         
         database.child("\(id)/message").observe(.value, with: { snapshot in
-            guard let value = snapshot.value as? [[String: Any]] else{
+            //print("The Message id is: \(id)/message and snapshot is \(String(describing: snapshot.value))")
+            
+            if snapshot.hasChildren() {
+                guard let value = snapshot.value as? [[String: Any]] else{
                 completion(.failure(DatabaseError.FetchToFetch))
                 return
             }
+            print("The value is", value)
+//            value = [[
+//                      "date": "Aug 20, 2020 at 11:27:01 AM GMT+6",
+//                      "content": "Emoji",
+//                      "sender_email": "maruf-dhaka2010-gmail-com",
+//                "name": "Home Made",
+//                "id": "resina-akter2004-gmail-com_maruf-dhaka2010-gmail-com_Aug 20, 2020 at 5:08:23 PM GMT+6",
+//                "is_read": 0,
+//                "type": "text"
+//                ]]
+            
             let message: [Message] = value.compactMap({dictionary in
                 
                 guard let messageId = dictionary["id"] as? String,
@@ -346,10 +364,11 @@ extension DatabaseManger{
                     let date = dictionary["date"] as? String,
                     let sender_email = dictionary["sender_email"] as? String,
                     let name = dictionary["name"] as? String,
-                    let is_read = dictionary["is_read"] as? Bool, let dateString = ChatViewController.dateFormater?.date(from: date)
+                    //let is_read = dictionary["is_read"] as? Bool,
+                    let dateString = ChatViewController.dateFormater?.date(from: date)
                     else{
-                        completion(.failure(DatabaseError.FetchToFetch))
                         print("Message array conpact map failed")
+                        completion(.failure(DatabaseError.CastingError))
                         return nil
                 }
                 let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
@@ -360,14 +379,19 @@ extension DatabaseManger{
                 if type == "photo"{
                 let media = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: CGSize(width: 300, height: 300))
                     kind = .photo(media)
+                }else if type == "video"{
+                let media = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "play")!, size: CGSize(width: 300, height: 300))
+                    kind = .video(media)
                 }else if type == "text"{
+                    kind = .text(content)
+                }else{
                     kind = .text(content)
                 }
                 guard let finalKind = kind else{ return nil}
                 return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: finalKind)
             })
             completion(.success(message))   
-            
+            }
         })
         
     }
@@ -399,8 +423,10 @@ extension DatabaseManger{
                 if let targetString = mediaItem.url?.absoluteString{
                     messageMedia = targetString
                 }
-            case .video(_):
-                break
+            case .video(let mediaItem):
+                if let targetString = mediaItem.url?.absoluteString{
+                    messageMedia = targetString
+                }
             case .location(_):
                 break
             case .emoji(_):

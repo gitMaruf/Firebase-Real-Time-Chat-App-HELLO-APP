@@ -17,9 +17,11 @@ class PhotoViewerViewController: UIViewController {
         imageView.backgroundColor = .white
         return imageView
     }()
+    private let url: URL
      init(url: URL) {
 //        let url = URL(string: urlString)
-        imageView.sd_setImage(with: url, completed: nil)
+        self.url = url
+        //imageView.sd_setImage(with: url, completed: nil)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -29,6 +31,9 @@ class PhotoViewerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(imageView)
+        self.title = "Photo"
+        self.navigationItem.largeTitleDisplayMode = .never
+        imageView.sd_setImage(with: url, completed: nil)
     }
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()

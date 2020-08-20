@@ -10,6 +10,7 @@ import UIKit
 import FirebaseAuth
 import FBSDKLoginKit
 import GoogleSignIn
+import SDWebImage
 
 class ProfileViewController: UIViewController {
 
@@ -67,6 +68,7 @@ class ProfileViewController: UIViewController {
                 print("URLSession data task error \(String(describing: error))")
                 return
             }
+            print("The Data is: ", data)
             DispatchQueue.main.async {
                 let image = UIImage(data: data)
                 imageView.image = image
