@@ -373,19 +373,18 @@ extension DatabaseManger{
                 }
                 let sender = Sender(senderId: sender_email, displayName: name, senderPhoto: "")
                 var kind: MessageKind?
-                guard let url = URL(string: content) else{
-                    return nil
-                }
                 if type == "photo"{
+                    guard let url = URL(string: content) else{return nil}
+
                 let media = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "photo")!, size: CGSize(width: 300, height: 300))
                     kind = .photo(media)
                 }else if type == "video"{
+                    guard let url = URL(string: content) else{return nil}
                 let media = mediaItem(url: url, image: nil, placeholderImage: UIImage(systemName: "play")!, size: CGSize(width: 300, height: 300))
                     kind = .video(media)
-                }else if type == "text"{
-                    kind = .text(content)
                 }else{
                     kind = .text(content)
+//                    print("the text message is \(content)")
                 }
                 guard let finalKind = kind else{ return nil}
                 return Message(sender: sender, messageId: messageId, sentDate: dateString, kind: finalKind)

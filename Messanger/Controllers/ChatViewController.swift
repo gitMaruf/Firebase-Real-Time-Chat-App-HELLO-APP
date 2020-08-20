@@ -11,6 +11,8 @@ import Foundation
 import MessageKit
 import InputBarAccessoryView
 import SDWebImage
+import AVFoundation
+import AVKit
 
 struct Message: MessageType{
     public var sender: SenderType
@@ -119,7 +121,6 @@ class ChatViewController: MessagesViewController {
         button.onTouchUpInside{_ in
             self.presentActionSheet()
         }
-        print("button is working!")
         self.messageInputBar.setLeftStackViewWidthConstant(to: 36, animated: true)
         messageInputBar.setStackViewItems([button], forStack: .left, animated: true)
     }
@@ -142,10 +143,10 @@ class ChatViewController: MessagesViewController {
         DatabaseManger.shared.getAllMessageForConversation(with: id, completion: {[weak self] result in
             switch result{
             case .success(let message):
-                guard !message.isEmpty else{
-                    return
-                }
-                print("Fetched Message is: \(message)")
+//                guard !message.isEmpty else{
+//                    return
+//                }
+//                print("Fetched Message is: \(message)")
                 self?.message = message
                 DispatchQueue.main.async {
                     self?.messagesCollectionView.reloadDataAndKeepOffset()
@@ -223,10 +224,12 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
     }
     
     func messageForItem(at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageType {
+//        print("message[indexPath.section]: ", message[indexPath.section])
         return message[indexPath.section]
     }
     
     func numberOfSections(in messagesCollectionView: MessagesCollectionView) -> Int {
+        print("Message Count: \(message.count)")
         return message.count
     }
     
@@ -384,6 +387,11 @@ extension ChatViewController: MessageCellDelegate{
             print(url)
             let vc = PhotoViewerViewController(url: url)
             self.navigationController?.pushViewController(vc, animated: true)
+        case .video(let media):
+            guard let videoUrl = media.url else{ return }
+            let vc = AVPlayerViewController()
+            vc.player = AVPlayer(url: videoUrl)
+            present(vc, animated: true)
         default:
             break
         }
