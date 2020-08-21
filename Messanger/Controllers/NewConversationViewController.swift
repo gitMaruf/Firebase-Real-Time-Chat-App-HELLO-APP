@@ -12,9 +12,9 @@ import JGProgressHUD
 class NewConversationViewController: UIViewController {
     
     let hud = JGProgressHUD(style: .dark)
-    public var completion: (([String: String]) -> (Void))?
+    public var completion: ((SearchResult) -> (Void))?
     private var users = [[String: String]]()
-    private var result = [[String: String]]()
+    private var result = [SearchResult]()
     
     private var hasFeched = false
     
@@ -26,7 +26,7 @@ class NewConversationViewController: UIViewController {
     }()
     let tableView: UITableView = {
         let table = UITableView()
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        table.register(NewConversationCell.self, forCellReuseIdentifier: NewConversationCell.identifier)
         table.isHidden = true
         return table
     }()
@@ -67,19 +67,22 @@ extension NewConversationViewController: UITableViewDataSource, UITableViewDeleg
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = result[indexPath.row]["name"]
+        let model = result[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: NewConversationCell.identifier, for: indexPath) as! NewConversationCell
+        cell.configure(with: model)
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         //start conversation
-        let targetData = result[indexPath.row]
+        let targetData = result[indexPath.row] 
         dismiss(animated: true) {[weak self] in
             self?.completion?(targetData)
         }
     }
-    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+           return 90
+       }
 }
 extension NewConversationViewController: UISearchBarDelegate{
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -116,13 +119,21 @@ extension NewConversationViewController: UISearchBarDelegate{
             return
         }
         hud.dismiss()
-        let result: [[String: String]] = self.users.filter({
-            guard let name = $0["name"]?.lowercased() else{
+        print("Users", users)
+        let currentUserEmail = UserDefaults.standard.value(forKey: "email")
+        let currentUserSafeEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail as! String)
+        let result: [SearchResult] = self.users.filter({
+           
+            guard let email = $0["email"], email != currentUserSafeEmail else{ return false}
+            guard let name = $0["name"]?.lowercased() else{ //$0 is the key, $1 is the value
                 return false
             }
-            print("I am here \(name)")
+            print("Names are: \(name)")
             return name.hasPrefix(term.lowercased())
-        })
+            }).compactMap({
+                guard let sname = $0["name"], let semail = $0["email"] else { return nil}
+                return SearchResult(name: sname, email: semail)
+            })
         self.result = result
         updateUI()
     }
@@ -133,7 +144,14 @@ extension NewConversationViewController: UISearchBarDelegate{
         }else{
             self.noSearchResult.isHidden = true
             self.tableView.isHidden = false
-            tableView.reloadData()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
+}
+
+struct SearchResult {
+    let name: String
+    let email: String
 }

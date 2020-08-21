@@ -112,7 +112,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
     }()
     
     let hud = JGProgressHUD(style: .light)
-    
+    private var loginObserver: NSObjectProtocol?
     override func viewDidLoad() {
         super.viewDidLoad()
         // Facebook Login Button
@@ -120,8 +120,13 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
 //        fbLoginButton.center = view.center
 //        view.addSubview(fbLoginButton)
         GIDSignIn.sharedInstance()?.presentingViewController = self
-        NotificationCenter.default.addObserver(self, selector: #selector(didSignIn), name: NSNotification.Name("SuccessfulSignInNotification"), object: nil)
-
+       //NotificationCenter.default.addObserver(self, selector: #selector(didSignIn), name: NSNotification.Name("SuccessfulSignInNotification"), object: nil)
+        loginObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name("SuccessfulSignInNotification"), object: nil, queue: .main, using: {[weak self]_ in
+                    guard let strongSelf = self else{
+                        return
+                    }
+                   strongSelf.didSignIn()
+                })
         emailFeild.delegate = self
         passwordFeild.delegate = self
         fbLoginButton.delegate = self
@@ -134,8 +139,8 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
     }
-    @objc func didSignIn()  {
-
+    //@objc
+    func didSignIn()  {
         // Add your code here to push the new view controller
       //navigationController?.pushViewController(ConversationsViewController(), animated: true)
         //present(ConversationsViewController(), animated: true, completion: nil)
@@ -144,7 +149,10 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self)
+       //NotificationCenter.default.removeObserver(self)
+        if let observer = loginObserver{
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     @objc private func didTapRegister(){
         let vc = RegisterViewController() //ProfileViewController() 

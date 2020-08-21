@@ -39,6 +39,7 @@ class ConversationsViewController: UIViewController {
         label.font = .systemFont(ofSize: 21, weight: .medium)
         return label
     }()
+    private var loginObserver: NSObjectProtocol?
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(tableView)
@@ -47,7 +48,14 @@ class ConversationsViewController: UIViewController {
         //DatabaseManger.shared.test()
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(rightBarButtonTap))
         setupTableView()
-        startListeningForConversation()
+         startListeningForConversation()
+         loginObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name("SuccessfulSignInNotification"), object: nil, queue: .main, using: {[weak self]_ in
+             guard let strongSelf = self else{
+                 return
+             }
+            strongSelf.startListeningForConversation()
+
+         })
         print("1 viewDidLoad")
     }
     override func viewDidLayoutSubviews() {
@@ -64,8 +72,15 @@ class ConversationsViewController: UIViewController {
     }
     private func startListeningForConversation(){
         guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else{
+           print("UserDefaults email not found")
             return
         }
+        print("Listen conversatin for user defaults email \(currentUserEmail)")
+        
+        if let observer = loginObserver{
+            NotificationCenter.default.removeObserver(observer)
+        }
+        
         let safeEmail = DatabaseManger.safeEmail(emailAddress: currentUserEmail)
         DatabaseManger.shared.getAllConversation(for: safeEmail, completion: {[weak self] result in
             switch result{
@@ -93,17 +108,15 @@ class ConversationsViewController: UIViewController {
         let vc = NewConversationViewController()
         vc.completion = { [weak self] result in
             print("\(result)")
-            
             self?.createNewConversation(result: result)
         }
 //        navigationController?.pushViewController(vc, animated: true)
         let nvc = UINavigationController(rootViewController: vc)
         present(nvc, animated: true, completion: nil)
     }
-    private func createNewConversation(result: [String: String]){
-        guard let name = result["name"], let email = result["email"] else{
-            return
-        }
+    private func createNewConversation(result: SearchResult){
+        let name = result.name
+        let email = result.email
         let vc = ChatViewController(with: email, id: nil)
         vc.isNewConverstion = true
         vc.title = name
