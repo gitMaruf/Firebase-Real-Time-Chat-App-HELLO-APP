@@ -137,22 +137,20 @@ class ConversationsViewController: UIViewController {
         // else use existance code
         let name = result.name
         let email = result.email
-        var alreadyExistConversationId: String?
         DatabaseManger.shared.conversationExist(with: email, completion: { [weak self] result in
             switch result{
             case .failure(let error):
                 print("Failed: \(error)")
                 print("ConversationId not found: \(String(describing: error))")
-                let vc = ChatViewController(with: email, id: alreadyExistConversationId)
+                let vc = ChatViewController(with: email, id: nil)
                 vc.isNewConverstion = true
                 vc.title = name
                 vc.navigationItem.largeTitleDisplayMode = .never
                 self?.navigationController?.pushViewController(vc, animated: true)
             case .success(let conversationId):
-                alreadyExistConversationId = conversationId
-//                print("ConversationId exist: \(String(describing: alreadyExistConversationId))")
-                let vc = ChatViewController(with: email, id: alreadyExistConversationId)
-                vc.isNewConverstion = true
+//                print("ConversationId exist: \(String(describing: conversationId))")
+                let vc = ChatViewController(with: email, id: conversationId)
+                vc.isNewConverstion = false
                 vc.title = name
                 vc.navigationItem.largeTitleDisplayMode = .never
                 self?.navigationController?.pushViewController(vc, animated: true)
