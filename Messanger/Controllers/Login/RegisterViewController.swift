@@ -222,9 +222,9 @@ class RegisterViewController: UIViewController {
                             
                             
                         })
-                    }
+                        UserDefaults.standard.set(email, forKey: "email")
+}
                 })
-                
                 self?.dismiss(animated: true, completion: nil)
                 //        print("Create User \(user)")
             }

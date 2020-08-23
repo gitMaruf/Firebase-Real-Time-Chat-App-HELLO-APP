@@ -108,20 +108,58 @@ class ConversationsViewController: UIViewController {
         let vc = NewConversationViewController()
         vc.completion = { [weak self] result in
             print("\(result)")
-            self?.createNewConversation(result: result)
+            guard let strongSelf = self else {
+                return
+            }
+            let currentConversation = strongSelf.conversations
+//            print("Conversations: \(currentConversation) \n result: \(result)")
+            if let targetConversation = currentConversation.first(where: { // first return where satisfied first time
+                $0.otherEmail == result.email
+            }){
+                let vc = ChatViewController(with: targetConversation.otherEmail, id: targetConversation.id)
+                vc.isNewConverstion = true
+                vc.title = targetConversation.name
+                vc.navigationItem.largeTitleDisplayMode = .never
+                strongSelf.navigationController?.pushViewController(vc, animated: true)
+            }else{
+                strongSelf.createNewConversation(result: result)
+            }
+            
+            
         }
 //        navigationController?.pushViewController(vc, animated: true)
         let nvc = UINavigationController(rootViewController: vc)
         present(nvc, animated: true, completion: nil)
     }
     private func createNewConversation(result: SearchResult){
+        // check if conversation exist with two user
+        // if exist user that
+        // else use existance code
         let name = result.name
         let email = result.email
-        let vc = ChatViewController(with: email, id: nil)
-        vc.isNewConverstion = true
-        vc.title = name
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+        var alreadyExistConversationId: String?
+        DatabaseManger.shared.conversationExist(with: email, completion: { [weak self] result in
+            switch result{
+            case .failure(let error):
+                print("Failed: \(error)")
+                print("ConversationId not found: \(String(describing: error))")
+                let vc = ChatViewController(with: email, id: alreadyExistConversationId)
+                vc.isNewConverstion = true
+                vc.title = name
+                vc.navigationItem.largeTitleDisplayMode = .never
+                self?.navigationController?.pushViewController(vc, animated: true)
+            case .success(let conversationId):
+                alreadyExistConversationId = conversationId
+//                print("ConversationId exist: \(String(describing: alreadyExistConversationId))")
+                let vc = ChatViewController(with: email, id: alreadyExistConversationId)
+                vc.isNewConverstion = true
+                vc.title = name
+                vc.navigationItem.largeTitleDisplayMode = .never
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+        })
+
+        
     }
     private func validateAuth(){
         if FirebaseAuth.Auth.auth().currentUser == nil {
@@ -154,13 +192,39 @@ extension ConversationsViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let model = conversations[indexPath.row]
+       openConversation(model)
+    }
+    func openConversation(_ model: Conversation){
         let vc = ChatViewController(with: model.otherEmail, id: model.id)
-        vc.title = model.name
-        vc.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.pushViewController(vc, animated: true)
+               vc.title = model.name
+               vc.navigationItem.largeTitleDisplayMode = .never
+               navigationController?.pushViewController(vc, animated: true)
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 120
+    }
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete{
+            let conversatonId = conversations[indexPath.row].id
+            tableView.beginUpdates()
+            self.conversations.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .left)
+            DatabaseManger.shared.deleteConversation(conversationId: conversatonId, completion: { success in
+                if success{
+                    DispatchQueue.main.async {
+                        tableView.reloadData()
+                    }
+                    print("Conversation deleted")
+                }else{
+                    print("Conversation failed to delete")
+                }
+            })
+            
+            tableView.endUpdates()
+        }
     }
 }
 
