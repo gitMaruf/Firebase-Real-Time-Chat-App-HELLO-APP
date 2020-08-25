@@ -18,7 +18,7 @@ class RegisterViewController: UIViewController {
     lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.view.frame.height)
     lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView(frame: .zero)
-        scrollView.backgroundColor = .orange
+        scrollView.backgroundColor = .systemBackground
         scrollView.frame = self.view.bounds // device display size
         scrollView.contentSize = contentViewSize // total content size
         scrollView.autoresizingMask = .flexibleHeight
@@ -28,7 +28,7 @@ class RegisterViewController: UIViewController {
     lazy var containerView: UIView = {
         let containerView = UIView()
         containerView.frame.size = contentViewSize
-        containerView.backgroundColor = .brown
+        containerView.backgroundColor = .systemBackground
         return containerView
     }()
     lazy var copyrightLable: UILabel = {
@@ -55,10 +55,10 @@ class RegisterViewController: UIViewController {
         feild.returnKeyType = .continue
         feild.placeholder = "First Name ..."
         feild.textAlignment = .center
-        feild.backgroundColor = .white
+        feild.backgroundColor = .secondarySystemBackground
         feild.layer.cornerRadius = 12
         feild.layer.borderWidth = 1
-        feild.layer.borderColor = UIColor.black.cgColor
+        feild.layer.borderColor = UIColor.gray.cgColor
         return feild
     }()
     lazy var lastNameFeild: UITextField = {
@@ -68,10 +68,10 @@ class RegisterViewController: UIViewController {
         feild.returnKeyType = .continue
         feild.placeholder = "Last Name ..."
         feild.textAlignment = .center
-        feild.backgroundColor = .white
+        feild.backgroundColor = .secondarySystemBackground
         feild.layer.cornerRadius = 12
         feild.layer.borderWidth = 1
-        feild.layer.borderColor = UIColor.black.cgColor
+        feild.layer.borderColor = UIColor.gray.cgColor
         return feild
     }()
     lazy var emailFeild: UITextField = {
@@ -81,10 +81,10 @@ class RegisterViewController: UIViewController {
         feild.returnKeyType = .continue
         feild.placeholder = "Emaill ..."
         feild.textAlignment = .center
-        feild.backgroundColor = .white
+        feild.backgroundColor = .secondarySystemBackground
         feild.layer.cornerRadius = 12
         feild.layer.borderWidth = 1
-        feild.layer.borderColor = UIColor.black.cgColor
+        feild.layer.borderColor = UIColor.gray.cgColor
         return feild
     }()
     
@@ -95,11 +95,11 @@ class RegisterViewController: UIViewController {
         feild.returnKeyType = .done
         feild.placeholder = "Password ..."
         feild.isSecureTextEntry = true
-        feild.backgroundColor = .white
+        feild.backgroundColor = .secondarySystemBackground
         feild.textAlignment = .center
         feild.layer.cornerRadius = 12
         feild.layer.borderWidth = 1
-        feild.layer.borderColor = UIColor.black.cgColor
+        feild.layer.borderColor = UIColor.gray.cgColor
         return feild
     }()
     lazy var registerButton: UIButton = {
@@ -120,7 +120,7 @@ class RegisterViewController: UIViewController {
         
         emailFeild.delegate = self
         passwordFeild.delegate = self
-        view.backgroundColor = .yellow
+        view.backgroundColor = .systemBackground
         view.addSubview(scrollView)
         scrollView.addSubview(containerView)
         //        containerView.addSubview(copyrightLable)
@@ -141,7 +141,7 @@ class RegisterViewController: UIViewController {
         formStackView.distribution = .fillEqually
         formStackView.spacing = 15
         formStackView.axis = .vertical
-        formStackView.backgroundColor = .cyan
+//        formStackView.backgroundColor = .cyan
         
         containerView.addSubview(imageView)
         containerView.addSubview(formStackView)

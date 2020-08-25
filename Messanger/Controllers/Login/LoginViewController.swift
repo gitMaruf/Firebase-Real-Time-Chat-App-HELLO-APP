@@ -69,10 +69,10 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
        feild.returnKeyType = .continue
        feild.placeholder = "Emaill ..."
        feild.textAlignment = .center
-       feild.backgroundColor = .white
+       feild.backgroundColor = .secondarySystemBackground
        feild.layer.cornerRadius = 12
        feild.layer.borderWidth = 1
-       feild.layer.borderColor = UIColor.black.cgColor
+       feild.layer.borderColor = UIColor.gray.cgColor
        return feild
    }()
    
@@ -83,11 +83,11 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
        feild.returnKeyType = .done
        feild.placeholder = "Password ..."
        feild.isSecureTextEntry = true
-       feild.backgroundColor = .white
+       feild.backgroundColor = .secondarySystemBackground
        feild.textAlignment = .center
        feild.layer.cornerRadius = 12
        feild.layer.borderWidth = 1
-       feild.layer.borderColor = UIColor.black.cgColor
+       feild.layer.borderColor = UIColor.gray.cgColor
        return feild
    }()
    lazy var loginButton: UIButton = {
@@ -132,7 +132,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
         fbLoginButton.delegate = self
         title = "Log In"
         navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Register", style: .plain, target: self, action: #selector(didTapRegister))
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         view.addSubview(scrollView)
         scrollView.addSubview(containerView)
         setupLoginConstraint()
@@ -157,7 +157,7 @@ lazy var contentViewSize = CGSize(width: self.view.frame.width, height: self.vie
     @objc private func didTapRegister(){
         let vc = RegisterViewController() //ProfileViewController() 
         vc.title = "Create Account"
-        vc.view.backgroundColor = .orange
+        vc.view.backgroundColor = .systemBackground
         //let nvc = UINavigationController(rootViewController: vc)
         //present(nvc, animated: true, completion: nil)
         //navigationController?.show(vc, sender: self)

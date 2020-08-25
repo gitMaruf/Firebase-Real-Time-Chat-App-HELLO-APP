@@ -13,6 +13,8 @@ import InputBarAccessoryView
 import SDWebImage
 import AVFoundation
 import AVKit
+import CoreLocation
+import MapKit
 
 struct Message: MessageType{
     public var sender: SenderType
@@ -51,14 +53,13 @@ extension MessageKind{
 }
 struct mediaItem: MediaItem{
     var url: URL?
-    
     var image: UIImage?
-    
     var placeholderImage: UIImage
-    
     var size: CGSize
-    
-    
+}
+struct Location: LocationItem{
+    var location: CLLocation
+    var size: CGSize
 }
 class ChatViewController: MessagesViewController {
     
@@ -135,10 +136,47 @@ class ChatViewController: MessagesViewController {
         alert.addAction(UIAlertAction(title: "Audio", style: .default, handler: {_ in
             
         }))
-        alert.addAction(UIAlertAction(title: "Calcel", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Location", style: .default, handler: {_ in
+            self.presentLocationPicker()
+               }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         present(alert, animated: true, completion: nil)
     }
-    
+    private func presentLocationPicker(){
+        let vc = LocationViewController(coordinates: nil)
+        vc.navigationItem.largeTitleDisplayMode = .never
+        vc.title = "Pick Location"
+        vc.completion = {[weak self] coordinates in
+            let latitude: Double = coordinates.latitude
+            let logitude: Double = coordinates.longitude
+            print(" Latitide: \(latitude) | Logitude \(logitude)")
+            let targetLocation = Location(location: CLLocation(latitude: latitude, longitude: logitude), size: .zero)
+            
+            guard let strongSelf = self, let selfSend = strongSelf.selfSender, let messageId = strongSelf.createMessageId(), let name = strongSelf.title, let conversationId = strongSelf.conversationId else{
+                return
+            }
+            // Send Message
+            let message: Message = Message(sender: selfSend, messageId: messageId, sentDate: Date(), kind: .location(targetLocation))
+            
+                DatabaseManger.shared.sendMessage(to: conversationId, otherUserEmail: strongSelf.otherUserEmail, name: name, newMessasge: message, completion: {success in
+                    if success{
+                        print("Location messagse sent")
+                    }else{
+                        print("Location message sending failed")
+                    }
+                })
+                
+            
+            
+        }
+        navigationController?.pushViewController(vc, animated: true)
+        
+        
+
+
+        
+        
+    }
     private func listenForMessage(id: String, shouldScrolToBottom: Bool){
         DatabaseManger.shared.getAllMessageForConversation(with: id, completion: {[weak self] result in
             switch result{
@@ -375,6 +413,23 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
     }
 }
 extension ChatViewController: MessageCellDelegate{
+    
+    func didTapMessage(in cell: MessageCollectionViewCell) {
+        //        print("i am here\(cell.hashValue)")
+        guard let indexpath = messagesCollectionView.indexPath(for: cell) else{
+            return
+        }
+        let message = self.message[indexpath.section]
+        switch message.kind{
+        case .location(let fetchLocationData):
+            let coordinate = fetchLocationData.location.coordinate
+            let vc = LocationViewController(coordinates: coordinate)
+            vc.title = "Location"
+                self.navigationController?.pushViewController(vc, animated: true)
+        default:
+            break
+        }
+    }
     func didTapImage(in cell: MessageCollectionViewCell) {
         guard let indexpath = messagesCollectionView.indexPath(for: cell) else{
             return

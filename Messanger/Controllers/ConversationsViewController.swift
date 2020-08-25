@@ -19,6 +19,7 @@ public struct LatestMessasge {
     let date: String
     let isRead: Bool
 }
+
 class ConversationsViewController: UIViewController {
     
     private var conversations = [Conversation]()
