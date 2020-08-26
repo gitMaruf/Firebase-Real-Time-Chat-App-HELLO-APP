@@ -8,7 +8,7 @@
 
 import UIKit
 
-class VideoPlayerViewController: UIViewController {
+final class VideoPlayerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

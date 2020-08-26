@@ -16,52 +16,10 @@ import AVKit
 import CoreLocation
 import MapKit
 
-struct Message: MessageType{
-    public var sender: SenderType
-    public var messageId: String
-    public var sentDate: Date
-    public var kind: MessageKind
-}
-struct Sender: SenderType {
-    var senderId: String
-    var displayName: String
-    var senderPhoto: String
-}
-extension MessageKind{
-    var messageKindString: String{
-        switch self {
-        case .text(_):
-            return "text"
-        case .attributedText(_):
-            return "attributed Text"
-        case .photo(_):
-            return "photo"
-        case .video(_):
-            return "video"
-        case .location(_):
-            return "location"
-        case .emoji(_):
-            return " emoji"
-        case .audio(_):
-            return "audio"
-        case .contact(_):
-            return "contact"
-        case .custom(_):
-            return "custom"
-        }
-    }
-}
-struct mediaItem: MediaItem{
-    var url: URL?
-    var image: UIImage?
-    var placeholderImage: UIImage
-    var size: CGSize
-}
-struct Location: LocationItem{
-    var location: CLLocation
-    var size: CGSize
-}
-class ChatViewController: MessagesViewController {
+final class ChatViewController: MessagesViewController {
+    
+    private var currentUserPhotoURL: URL?
+    private var otherUserPhotoUrl: URL?
     
     public static let dateFormater: DateFormatter? = {
         let dateformater = DateFormatter()
@@ -86,8 +44,8 @@ class ChatViewController: MessagesViewController {
     //let message: [Message] = [Message(sender: senderOne, messageId: "m1", sentDate: Date(), kind: .text("This is my first Message to you.")), Message(sender: senderOne, messageId: "m2", sentDate: Date(), kind: .text("This is my first Message to you. This is my first Message to you. This is my first Message to you. This is my first Message to you.")),]
     
     public var isNewConverstion = false
-    public let otherUserEmail: String
-    private let conversationId: String?
+    public var otherUserEmail: String
+    private var conversationId: String?
     
     init(with email: String, id: String?) {
         self.otherUserEmail = email
@@ -218,6 +176,11 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
                 if success{
                     print("New conversation created")
                     self?.isNewConverstion = false
+                    let convId = "coversations_\(message.messageId)"
+                    self?.conversationId = convId
+                    guard let listenForConversationId = self?.conversationId else { return }
+                    self?.listenForMessage(id: listenForConversationId, shouldScrolToBottom: true)
+                    self?.messageInputBar.inputTextView.text = nil
                 }else{
                     print("New Conversation Creation Failed")
                 }
@@ -229,8 +192,9 @@ extension ChatViewController: InputBarAccessoryViewDelegate{
                 return
             }
             
-            DatabaseManger.shared.sendMessage(to: conversationId, otherUserEmail: otherUserEmail, name: name, newMessasge: message, completion: {success in
+            DatabaseManger.shared.sendMessage(to: conversationId, otherUserEmail: otherUserEmail, name: name, newMessasge: message, completion: {[weak self] success in
                 if success{
+                    self?.messageInputBar.inputTextView.text = nil
                     print("messagse sent")
                 }else{
                     print("Message send failed")
@@ -410,6 +374,67 @@ extension ChatViewController: UIImagePickerControllerDelegate, UINavigationContr
         default:
             break
         }
+    }
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        let sender = message.sender
+        if sender.senderId == selfSender?.senderId{
+            if let currentUserPhotoURLIs = currentUserPhotoURL{
+                avatarView.sd_setImage(with: currentUserPhotoURLIs, completed: nil)
+            }else{
+                
+                guard let email = UserDefaults.standard.value(forKey: "email") as? String else{
+                    return
+                }
+                let safeEmail = DatabaseManger.safeEmail(emailAddress: email)
+                let profilePicture = "\(safeEmail)_profile_picture.jpg";
+                let path = "images/\(profilePicture)"
+                
+                StorageManager.shared.downloadProfilePicture(with: path) { [weak self](result) in
+                    switch(result){
+                    case .failure(let error):
+                        print("Failed to download URL:\(error)")
+                    case .success(let url):
+                        self?.currentUserPhotoURL = url
+                        DispatchQueue.main.async {
+                            avatarView.sd_setImage(with: url, completed: nil)
+                        }
+                        print("Current user photo for chat:", url)
+                    }
+                }
+                
+            }
+        }else{
+            if let otherUserPhotoUrlis = otherUserPhotoUrl{
+                avatarView.sd_setImage(with: otherUserPhotoUrlis, completed: nil)
+            }else{
+                
+                let profilePicture = "\(otherUserEmail)_profile_picture.jpg";
+                let path = "images/\(profilePicture)"
+                
+                StorageManager.shared.downloadProfilePicture(with: path) { [weak self](result) in
+                    switch(result){
+                    case .failure(let error):
+                        print("Failed to download URL:\(error)")
+                    case .success(let url):
+                        self?.otherUserPhotoUrl = url
+                        DispatchQueue.main.async {
+                            avatarView.sd_setImage(with: url, completed: nil)
+                        }
+                        print("Other user photo for chat:", url)
+                    }
+                }
+                
+            }
+        }
+        //        print("Final Current user photo URL \(String(describing: currentUserPhotoURL))")
+        
+    }
+    func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        let sender = message.sender
+        if sender.senderId == selfSender?.senderId{
+            return .systemTeal
+        }
+        return .systemGray2
     }
 }
 extension ChatViewController: MessageCellDelegate{

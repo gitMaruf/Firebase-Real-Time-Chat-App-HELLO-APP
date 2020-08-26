@@ -10,14 +10,14 @@ import UIKit
 import CoreLocation
 import MapKit
 
-class LocationViewController: UIViewController {
+final class LocationViewController: UIViewController {
     
     var completion: ((CLLocationCoordinate2D) -> Void)?
     var coordinate: CLLocationCoordinate2D?
-    var isPickable = true
+//    var isPickable = true
     init(coordinates: CLLocationCoordinate2D?){
         self.coordinate = coordinates
-        isPickable = false
+//        isPickable = false
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -34,22 +34,21 @@ class LocationViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         view.addSubview(map)
-        if isPickable{
+//        if isPickable{
+        if let coordinate = coordinate {
+            let pin = MKPointAnnotation()
+                       pin.coordinate = coordinate
+                       map.addAnnotation(pin)
+            
+        }else{
             navigationItem.rightBarButtonItem = UIBarButtonItem.init(title: "Send", style: .done, target: self, action: #selector(sendLocationButtonTapped))
             map.isUserInteractionEnabled = true
             let gesture = UITapGestureRecognizer(target: self, action: #selector(tapMap))
             gesture.numberOfTapsRequired = 1
             gesture.numberOfTouchesRequired = 1
             map.addGestureRecognizer(gesture)
-            
-        }else{
-            guard let coordinate = coordinate else { return }
-            let pin = MKPointAnnotation()
-            pin.coordinate = coordinate
-            
-            map.addAnnotation(pin)
+           
         }
-        
     }
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()

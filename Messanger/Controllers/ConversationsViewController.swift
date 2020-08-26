@@ -8,19 +8,8 @@
 import UIKit
 import FirebaseAuth
 
-public struct Conversation{
-    let id: String
-    let name: String
-    let otherEmail: String
-    let latestMessasge: LatestMessasge
-}
-public struct LatestMessasge {
-    let text: String
-    let date: String
-    let isRead: Bool
-}
 
-class ConversationsViewController: UIViewController {
+final class ConversationsViewController: UIViewController {
     
     private var conversations = [Conversation]()
     let tableView: UITableView = {
@@ -62,13 +51,15 @@ class ConversationsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
+        noConversationLable.frame = CGRect(x: 0, y: (view.frame.height-200)/2, width: view.frame.width, height: 200)
+
         print("2 viewDidLayoutSubviews")
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         //let isLoginStatus = UserDefaults.standard.bool(forKey: "isLogin")
         validateAuth()
-        fetchConversation()
+//        fetchConversation()
         print("3 viewDidAppear")
     }
     private func startListeningForConversation(){
@@ -88,13 +79,19 @@ class ConversationsViewController: UIViewController {
             case .success(let conversations):
                 //print("coversations is \(conversations)")
                 guard !conversations.isEmpty else{
+                    self?.tableView.isHidden = true
+                    self?.noConversationLable.isHidden = false
                     return
                 }
+                self?.tableView.isHidden = false
+                 self?.noConversationLable.isHidden = true
                 self?.conversations = conversations
                 DispatchQueue.main.async {
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
+                self?.tableView.isHidden = true
+                self?.noConversationLable.isHidden = false
             print("Conversation Listening Error(No Conversation Found) \(error)")
             }
         })
@@ -169,9 +166,9 @@ class ConversationsViewController: UIViewController {
         }
         
     }
-    public func fetchConversation(){
-        tableView.isHidden = false
-    }
+//    public func fetchConversation(){
+//        tableView.isHidden = false
+//    }
 
 }
 extension ConversationsViewController: UITableViewDelegate, UITableViewDataSource{

@@ -20,10 +20,16 @@
 		3B5B947E24B8753B0003B3EC /* NewConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B947D24B8753B0003B3EC /* NewConversationViewController.swift */; };
 		3B5B948024B875500003B3EC /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B5B947F24B875500003B3EC /* ProfileViewController.swift */; };
 		3B6B171A24EF90480004C7E9 /* NewConversationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6B171924EF90480004C7E9 /* NewConversationCell.swift */; };
+		3B6C3BED24F66948009F3A3C /* ConversationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C3BEC24F66948009F3A3C /* ConversationModel.swift */; };
+		3B6C3BF024F66961009F3A3C /* ChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C3BEF24F66961009F3A3C /* ChatModel.swift */; };
+		3B6C3BF224F669F6009F3A3C /* SearchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C3BF124F669F6009F3A3C /* SearchModel.swift */; };
+		3B6C3BF424F66BC7009F3A3C /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C3BF324F66BC7009F3A3C /* ProfileModel.swift */; };
 		3B6C5F8824E38EDD000349DD /* ConversationTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6C5F8724E38EDD000349DD /* ConversationTableViewCell.swift */; };
 		3B6F84CB24F3662B00BEAFD5 /* LocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6F84CA24F3662B00BEAFD5 /* LocationViewController.swift */; };
 		3B6F91DD24C34AC5005D7C6E /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B6F91DC24C34AC5005D7C6E /* DatabaseManager.swift */; };
 		3B9FA5B824CE9EAA0091651A /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B9FA5B724CE9EAA0091651A /* ChatViewController.swift */; };
+		3BA369A524F63ACA00EA89BD /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA369A424F63ACA00EA89BD /* Extension.swift */; };
+		3BBDAED524F56596005FFACF /* CrashlyticsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BBDAED424F56596005FFACF /* CrashlyticsViewController.swift */; };
 		3BE2222924D1206E0066137C /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE2222824D1206E0066137C /* StorageManager.swift */; };
 		3BE6E30D24BDCCD7009E18CB /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3BE6E30C24BDCCD7009E18CB /* GoogleService-Info.plist */; };
 		A1644E78BA7810DE3E33052E /* Pods_Messanger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8973DE67D95522F4D09EA7B3 /* Pods_Messanger.framework */; };
@@ -46,10 +52,16 @@
 		3B5B947D24B8753B0003B3EC /* NewConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationViewController.swift; sourceTree = "<group>"; };
 		3B5B947F24B875500003B3EC /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		3B6B171924EF90480004C7E9 /* NewConversationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationCell.swift; sourceTree = "<group>"; };
+		3B6C3BEC24F66948009F3A3C /* ConversationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationModel.swift; sourceTree = "<group>"; };
+		3B6C3BEF24F66961009F3A3C /* ChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModel.swift; sourceTree = "<group>"; };
+		3B6C3BF124F669F6009F3A3C /* SearchModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModel.swift; sourceTree = "<group>"; };
+		3B6C3BF324F66BC7009F3A3C /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
 		3B6C5F8724E38EDD000349DD /* ConversationTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationTableViewCell.swift; sourceTree = "<group>"; };
 		3B6F84CA24F3662B00BEAFD5 /* LocationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationViewController.swift; sourceTree = "<group>"; };
 		3B6F91DC24C34AC5005D7C6E /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		3B9FA5B724CE9EAA0091651A /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		3BA369A424F63ACA00EA89BD /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
+		3BBDAED424F56596005FFACF /* CrashlyticsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashlyticsViewController.swift; sourceTree = "<group>"; };
 		3BE2222824D1206E0066137C /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		3BE6E30C24BDCCD7009E18CB /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		60C4612B838F48CA7F58FF3E /* Pods-Messanger.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Messanger.release.xcconfig"; path = "Target Support Files/Pods-Messanger/Pods-Messanger.release.xcconfig"; sourceTree = "<group>"; };
@@ -114,6 +126,10 @@
 		3B5B946E24B873020003B3EC /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				3B6C3BEC24F66948009F3A3C /* ConversationModel.swift */,
+				3B6C3BEF24F66961009F3A3C /* ChatModel.swift */,
+				3B6C3BF124F669F6009F3A3C /* SearchModel.swift */,
+				3B6C3BF324F66BC7009F3A3C /* ProfileModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -129,6 +145,7 @@
 				3B5B947B24B874F00003B3EC /* VideoPlayerViewController.swift */,
 				3B9FA5B724CE9EAA0091651A /* ChatViewController.swift */,
 				3B6F84CA24F3662B00BEAFD5 /* LocationViewController.swift */,
+				3BBDAED424F56596005FFACF /* CrashlyticsViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -147,6 +164,7 @@
 				3B5B945B24B872C20003B3EC /* SceneDelegate.swift */,
 				3B6F91DC24C34AC5005D7C6E /* DatabaseManager.swift */,
 				3BE2222824D1206E0066137C /* StorageManager.swift */,
+				3BA369A424F63ACA00EA89BD /* Extension.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -199,6 +217,7 @@
 				3B5B945424B872C20003B3EC /* Resources */,
 				A804EEA25F938D8A13B56E58 /* [CP] Embed Pods Frameworks */,
 				E1D4AE73732C94967C12BC33 /* [CP] Copy Pods Resources */,
+				3B194FF824F51AF200BD008A /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -257,6 +276,26 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		3B194FF824F51AF200BD008A /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n";
+		};
 		5C453E3876CD5C24874EBD0D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -322,6 +361,9 @@
 			files = (
 				3B6F84CB24F3662B00BEAFD5 /* LocationViewController.swift in Sources */,
 				3B5B947424B8745D0003B3EC /* LoginViewController.swift in Sources */,
+				3B6C3BF024F66961009F3A3C /* ChatModel.swift in Sources */,
+				3B6C3BF224F669F6009F3A3C /* SearchModel.swift in Sources */,
+				3BBDAED524F56596005FFACF /* CrashlyticsViewController.swift in Sources */,
 				3B5B947624B874950003B3EC /* RegisterViewController.swift in Sources */,
 				3B9FA5B824CE9EAA0091651A /* ChatViewController.swift in Sources */,
 				3BE2222924D1206E0066137C /* StorageManager.swift in Sources */,
@@ -329,11 +371,14 @@
 				3B6B171A24EF90480004C7E9 /* NewConversationCell.swift in Sources */,
 				3B5B947E24B8753B0003B3EC /* NewConversationViewController.swift in Sources */,
 				3B5B945E24B872C20003B3EC /* ConversationsViewController.swift in Sources */,
+				3BA369A524F63ACA00EA89BD /* Extension.swift in Sources */,
 				3B5B947C24B874F00003B3EC /* VideoPlayerViewController.swift in Sources */,
 				3B5B945A24B872C20003B3EC /* AppDelegate.swift in Sources */,
+				3B6C3BF424F66BC7009F3A3C /* ProfileModel.swift in Sources */,
 				3B6C5F8824E38EDD000349DD /* ConversationTableViewCell.swift in Sources */,
 				3B5B948024B875500003B3EC /* ProfileViewController.swift in Sources */,
 				3B5B945C24B872C20003B3EC /* SceneDelegate.swift in Sources */,
+				3B6C3BED24F66948009F3A3C /* ConversationModel.swift in Sources */,
 				3B5B947924B874CE0003B3EC /* PhotoViewerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -393,7 +438,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

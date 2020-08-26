@@ -201,6 +201,9 @@ class RegisterViewController: UIViewController {
                     print("Error Occur : ", error as Any)
                     return
                 }
+                UserDefaults.standard.set(email, forKey: "email")
+                UserDefaults.standard.setValue("\(firstName) \(lastName)", forKey: "name")
+                
                 let chatAppUser = DatabaseManger.ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
                 //        let user = result.user
                 //        strongSelf.navigationController?.dismiss(animated: true, completion: nil)
@@ -222,7 +225,6 @@ class RegisterViewController: UIViewController {
                             
                             
                         })
-                        UserDefaults.standard.set(email, forKey: "email")
 }
                 })
                 self?.dismiss(animated: true, completion: nil)

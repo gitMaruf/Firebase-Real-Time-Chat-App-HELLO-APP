@@ -9,7 +9,7 @@
 import UIKit
 import JGProgressHUD
 
-class NewConversationViewController: UIViewController {
+final class NewConversationViewController: UIViewController {
     
     let hud = JGProgressHUD(style: .dark)
     public var completion: ((SearchResult) -> (Void))?
@@ -149,9 +149,4 @@ extension NewConversationViewController: UISearchBarDelegate{
             }
         }
     }
-}
-
-struct SearchResult {
-    let name: String
-    let email: String
 }

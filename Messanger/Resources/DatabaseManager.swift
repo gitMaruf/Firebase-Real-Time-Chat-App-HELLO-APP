@@ -347,7 +347,8 @@ extension DatabaseManger{
                 completion(.failure(DatabaseError.FailedToFetch))
                 return
             }
-            print("The value is", value)
+//            print("The value is", value)
+                
 //            value = [[
 //                      "date": "Aug 20, 2020 at 11:27:01 AM GMT+6",
 //                      "content": "Emoji",

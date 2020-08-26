@@ -87,6 +87,21 @@
             </objects>
             <point key="canvasLocation" x="722" y="-301"/>
         </scene>
+        <!--Crashlytics View Controller-->
+        <scene sceneID="DOF-hw-GrU">
+            <objects>
+                <viewController id="Swf-kq-hgD" customClass="CrashlyticsViewController" customModule="Messanger" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="78H-uU-v87">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="VqW-PF-Tc0"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="han-7M-gWm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2053" y="-321"/>
+        </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="cQ3-8G-h4W">
             <objects>

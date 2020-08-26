@@ -12,16 +12,10 @@ import FBSDKLoginKit
 import GoogleSignIn
 import SDWebImage
 
-class ProfileViewController: UIViewController {
 
-    enum ProfileViewDataType{
-        case info, signout
-    }
-    struct ProfileView{
-        var viewDataType: ProfileViewDataType
-        var title: String
-        var handler: (() -> Void)?
-    }
+final class ProfileViewController: UIViewController { // final class cant be inherited!
+
+   
     @IBOutlet var tableView: UITableView!
 //    let data = ["Sign Out"]
     var data = [ProfileView]()
@@ -57,14 +51,18 @@ class ProfileViewController: UIViewController {
                        do{
                            
                            try FirebaseAuth.Auth.auth().signOut()
-                           UserDefaults.standard.removeObject(forKey: "email")
+//                           UserDefaults.standard.removeObject(forKey: "email")
+//                           UserDefaults.standard.removeObject(forKey: "name")
+                        UserDefaults.standard.setValue(nil, forKey: "email")
+                        UserDefaults.standard.setValue(nil, forKey: "name")
                            let vc = LoginViewController()
                            let nvc = UINavigationController(rootViewController: vc)
                            nvc.modalPresentationStyle = UIModalPresentationStyle.fullScreen
                            strongSelf.present(nvc, animated: true, completion: nil)
                        }
                        catch{
-                           print("Failed to logout")
+//                        print("Failed to logout")
+                        fatalError("Failed to logout")
                        }
                    }))
                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
